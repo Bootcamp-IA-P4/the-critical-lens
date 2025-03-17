@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}Inicio - The Critical Lens{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <h1 class="mb-6 text-3xl font-bold text-gray-800">Make our society critical again</h1>
+    
+    <div class="p-6 mb-8 bg-white rounded-lg shadow-md">
+        <h2 class="mb-4 text-xl font-semibold text-indigo-700">Bienvenido a The Critical Lens</h2>
+        <p class="mb-4 text-gray-700">
+            Una herramienta educativa para analizar noticias y fomentar el pensamiento crítico
+            en la era de la desinformación.
+        </p>
+        <div class="flex justify-center">
+            <a href="/analyzer" class="px-6 py-2 font-bold text-white transition duration-300 bg-indigo-600 rounded-lg hover:bg-indigo-700">
+                Comenzar a analizar
+            </a>
+        </div>
+    </div>
+    
+    <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
+        <div class="p-6 bg-white rounded-lg shadow-md">
+            <h3 class="mb-3 text-lg font-semibold text-indigo-700">Aprende</h3>
+            <p class="text-gray-700">
+                Descubre los principios del pensamiento crítico y cómo aplicarlos a la información que consumes.
+            </p>
+        </div>
+        <div class="p-6 bg-white rounded-lg shadow-md">
+            <h3 class="mb-3 text-lg font-semibold text-indigo-700">Analiza</h3>
+            <p class="text-gray-700">
+                Utiliza nuestra herramienta para examinar noticias y desarrollar tus habilidades de verificación.
+            </p>
+        </div>
+        <div class="p-6 bg-white rounded-lg shadow-md">
+            <h3 class="mb-3 text-lg font-semibold text-indigo-700">Explora</h3>
+            <p class="text-gray-700">
+                Navega por ejemplos de noticias analizadas para entender los patrones de desinformación.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
