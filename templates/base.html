@@ -1,0 +1,87 @@
+{% load tailwind_tags %}
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>{% block title %}The Critical Lens{% endblock %}</title>
+        {% tailwind_css %} {% block extra_css %}{% endblock %}
+    </head>
+    <body class="bg-gray-50 min-h-screen">
+        <header class="bg-indigo-700 text-white shadow-md">
+            <div class="container mx-auto px-4 py-4">
+                <div class="flex justify-between items-center">
+                    <a href="/" class="text-2xl font-bold">The Critical Lens</a>
+                    <nav>
+                        <ul class="flex space-x-6">
+                            <li>
+                                <a href="/" class="hover:text-indigo-200"
+                                    >Inicio</a
+                                >
+                            </li>
+                            <li>
+                                <a
+                                    href="/explorer"
+                                    class="hover:text-indigo-200"
+                                    >Explorador</a
+                                >
+                            </li>
+                            <li>
+                                <a
+                                    href="/analyzer"
+                                    class="hover:text-indigo-200"
+                                    >Analizador</a
+                                >
+                            </li>
+                            <li>
+                                <a href="/about" class="hover:text-indigo-200"
+                                    >Acerca de</a
+                                >
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </header>
+
+        <main class="container mx-auto px-4 py-8">
+            {% block content %}{% endblock %}
+        </main>
+
+        <footer class="bg-gray-800 text-white py-6">
+            <div class="container mx-auto px-4">
+                <div
+                    class="flex flex-col md:flex-row justify-between items-center"
+                >
+                    <div class="mb-4 md:mb-0">
+                        <p>
+                            &copy; 2025 The Critical Lens - Make our society
+                            critical again
+                        </p>
+                    </div>
+                    <div>
+                        <ul class="flex space-x-4">
+                            <li>
+                                <a href="/privacy" class="hover:text-indigo-300"
+                                    >Privacidad</a
+                                >
+                            </li>
+                            <li>
+                                <a href="/terms" class="hover:text-indigo-300"
+                                    >Términos</a
+                                >
+                            </li>
+                            <li>
+                                <a href="/contact" class="hover:text-indigo-300"
+                                    >Contacto</a
+                                >
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </footer>
+
+        {% block extra_js %}{% endblock %}
+    </body>
+</html>
