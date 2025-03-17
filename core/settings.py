@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'apps.analyzer',
     'apps.dataset',
     'apps.dashboard',
+    'theme',
 ]
 
 # Tailwind configuration
