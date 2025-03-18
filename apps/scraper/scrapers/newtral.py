@@ -23,11 +23,17 @@ class NewtralScraper(BaseScraper):
     Specialized scraper for extracting fact-checks from Newtral.
     Uses Selenium for navigation and BeautifulSoup for parsing content.
     """
-    def __init__(self):
-        """Initialize the Newtral scraper with the base URL."""
+    def __init__(self, respect_robots=True):
+        """
+        Initialize the Newtral scraper with the base URL.
+        
+        Args:
+            respect_robots (bool): Whether to respect robots.txt rules
+        """
         super().__init__(
             base_url="https://www.newtral.es",
-            name="NewtralScraper"
+            name="NewtralScraper",
+            respect_robots=respect_robots
         )
         self.fact_check_url = "https://www.newtral.es/zona-verificacion/fact-check/"
 
