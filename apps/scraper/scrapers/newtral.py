@@ -106,6 +106,10 @@ class NewtralScraper(BaseScraper):
             "blockquote.claim",
             ".card-text-marked-orange",  # Add this specific selector
             ".card-text-container .card-text-marked-orange mark",  # More specific selector
+            # Additional Newtral-specific selectors
+            ".card-text-marked-red",
+            ".card-text-marked-pistachio",
+            ".card-text-marked-green",
             
             # Paragraphs with distinctive text
             "p.single-main-contentfactchecks-methodology-result",
@@ -122,7 +126,7 @@ class NewtralScraper(BaseScraper):
                 claim_text = element.get_text(strip=True)
                 
                 # Clean quotes and extra spaces
-                claim_text = re.sub(r'^["""]|["""]$', '', claim_text)  # Fix the regular expression
+                claim_text = re.sub(r'^["""]|["""]$', '', claim_text)
                 claim_text = re.sub(r'\s+', ' ', claim_text).strip()
                 
                 # Validate length and relevance of the claim
@@ -251,7 +255,9 @@ class NewtralScraper(BaseScraper):
             "div.post-content",
             "article.post-content",
             "div.main-content",
-            "div.content"
+            "div.content",
+            # Newtral-specific selectors
+            "div.section-post-content"
         ]
         
         # Keywords to identify relevant paragraphs
@@ -308,96 +314,87 @@ class NewtralScraper(BaseScraper):
         return fallback_content if len(fallback_content) > 100 else None
 
     def _get_fact_check_urls(self, limit):
-        """
-        Extract URLs of fact-check articles.
-        
-        Args:
-            limit (int): Maximum number of URLs to extract
-            
-        Returns:
-            list: List of fact-check URLs
-        """
-        logger.info(f"Extracting up to {limit} fact-check URLs")
-        
-        # Predefined URLs as fallback
+        """Extract URLs supporting pagination through 'Cargar más' button to reach limit."""
         predefined_urls = [
             "https://www.newtral.es/espana-ayuda-militar-ucrania-factcheck/20250317/",
             "https://www.newtral.es/presion-fiscal-patxi-lopez-factcheck/20250312/",
-            "https://www.newtral.es/mujeres-autonomas-madrid-factcheck/20250310/"
+            "https://www.newtral.es/mujeres-autonomas-madrid-factcheck/20250310/",
+            "https://www.newtral.es/empresas-abandonan-cataluna-pepa-millan-factcheck/20250310/",
+            "https://www.newtral.es/mannheim-nacionalidad-atropello-buxade-factcheck/20250306/"
         ]
 
-        # Initialize WebDriver
         driver = self._initialize_webdriver()
         
         try:
-            # Open the fact-checks page
             driver.get(self.fact_check_url)
+            time.sleep(3)
             
-            # Wait for elements to load
-            WebDriverWait(driver, 15).until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, "article.item, h2 a"))
-            )
-            
-            # More robust URL extraction strategy
             urls = []
-            page_height = driver.execute_script("return document.body.scrollHeight")
-            scroll_attempts = 0
+            max_pagination_attempts = 20  # Límite de páginas a cargar
+            pagination_attempts = 0
             
-            while len(urls) < limit and scroll_attempts < 10:
-                # Look for specific fact-check URL selectors
-                url_selectors = [
-                    "article.item a[href*='factcheck']",
-                    "h2 a[href*='factcheck']",
-                    "div.post-list a[href*='factcheck']",
-                    "a.post-link[href*='factcheck']"
-                ]
+            # Función para extraer URLs de la página actual
+            def extract_current_urls():
+                link_xpath = "//div[contains(@class, 'card-featured-archive') or contains(@class, 'card-featured-archive-small')]//a[contains(@class, 'card-title-link')]"
+                links = driver.find_elements(By.XPATH, link_xpath)
+                new_urls_count = 0
                 
-                for selector in url_selectors:
-                    try:
-                        article_elements = driver.find_elements(By.CSS_SELECTOR, selector)
-                        for element in article_elements:
-                            url = element.get_attribute('href')
-                            if (url and
-                                '/factcheck/' in url.lower() and
-                                url not in urls and
-                                re.search(r'/202\d{5}/', url)):
-                                urls.append(url)
-                                
-                            if len(urls) >= limit:
-                                break
-                                
-                        if len(urls) >= limit:
-                            break
-                    except Exception as e:
-                        logger.warning(f"Error with selector {selector}: {e}")
-                        
-                # If not enough URLs, scroll down
-                if len(urls) < limit:
-                    # Scroll to the bottom of the page
-                    driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-                    time.sleep(2)  # Wait for more content to load
+                for link in links:
+                    url = link.get_attribute('href')
+                    if url and url not in urls:
+                        urls.append(url)
+                        new_urls_count += 1
+                        logger.info(f"Found URL: {url}")
+                
+                return new_urls_count
+            
+            # Extraer URLs iniciales
+            initial_count = extract_current_urls()
+            logger.info(f"Initially found {initial_count} URLs")
+            
+            # Seguir cargando más hasta alcanzar el límite o agotar páginas
+            while len(urls) < limit and pagination_attempts < max_pagination_attempts:
+                try:
+                    # Identificar y scrollear hasta el botón
+                    load_more = driver.find_element(By.ID, "vog-newtral-es-verification-list-load-more-btn")
                     
-                    # Check if page height has changed
-                    new_height = driver.execute_script("return document.body.scrollHeight")
-                    if new_height == page_height:
-                        scroll_attempts += 1
-                    else:
-                        page_height = new_height
-                        scroll_attempts = 0
-                        
-            # If no URLs found, use predefined ones
+                    # Verificar si el botón está visible
+                    if not load_more.is_displayed():
+                        logger.info("Load more button not visible, likely reached end of content")
+                        break
+                    
+                    # Scroll al botón y hacer clic
+                    driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", load_more)
+                    time.sleep(1)
+                    driver.execute_script("arguments[0].click();", load_more)
+                    
+                    # Esperar a que cargue nuevo contenido
+                    time.sleep(3)
+                    
+                    # Extraer nuevas URLs
+                    new_count = extract_current_urls()
+                    
+                    # Si no se encontraron nuevas URLs, probablemente llegamos al final
+                    if new_count == 0:
+                        logger.info("No new URLs found after clicking 'Load more', likely reached end of content")
+                        break
+                    
+                    pagination_attempts += 1
+                    logger.info(f"Loaded page {pagination_attempts}, total URLs: {len(urls)}")
+                    
+                except Exception as e:
+                    logger.warning(f"Error clicking 'Load more' button: {e}")
+                    break
+            
             if not urls:
-                urls = predefined_urls
-                
-            logger.info(f"Found {len(urls)} fact-check URLs")
+                logger.warning("No URLs found, using predefined URLs")
+                return predefined_urls[:limit]
+            
             return urls[:limit]
-            
         except Exception as e:
-            logger.error(f"Error extracting fact-check URLs: {e}")
+            logger.error(f"Error extracting URLs: {e}")
             return predefined_urls[:limit]
-            
         finally:
-            # Close the WebDriver
             driver.quit()
 
     def scrape(self, **kwargs):
@@ -475,22 +472,39 @@ class NewtralScraper(BaseScraper):
                     title = self._clean_text(title_element.get_text())
                     break
                     
-            # Extract verification
+            # Extract verification using specific Newtral class-based approach
             verification_categories = ["Verdad a medias", "Falso", "Engañoso", "Verdadero"]
             category = None
             
-            # Look for category in different elements
-            for cat in verification_categories:
-                # Look for direct text
-                category_elements = soup.find_all(string=lambda text: cat in text)
-                
-                # Look in elements with specific style or class
-                if not category_elements:
-                    category_elements = soup.select(f"*:contains('{cat}')")
-                    
-                if category_elements:
+            # Use Newtral specific selectors for verification categories
+            verification_selectors = {
+                ".card-text-marked-red": "Falso",
+                ".card-text-marked-orange": "Engañoso",
+                ".card-text-marked-pistachio": "Verdad a medias",
+                ".card-text-marked-green": "Verdadero"
+            }
+            
+            # Try to find category based on CSS classes
+            for selector, cat in verification_selectors.items():
+                element = soup.select_one(selector)
+                if element:
                     category = cat
                     break
+            
+            # If not found, look for direct mention of categories in text
+            if not category:
+                # Look for category in different elements
+                for cat in verification_categories:
+                    # Look for direct text
+                    category_elements = soup.find_all(string=lambda text: cat in text)
+                    
+                    # Look in elements with specific style or class
+                    if not category_elements:
+                        category_elements = soup.select(f"*:contains('{cat}')")
+                        
+                    if category_elements:
+                        category = cat
+                        break
                     
             # Extract date from URL or page
             publish_date = None
@@ -507,7 +521,8 @@ class NewtralScraper(BaseScraper):
                         "time[datetime]",
                         ".post-date",
                         ".entry-date",
-                        "meta[property='article:published_time']"
+                        "meta[property='article:published_time']",
+                        ".card-meta-date" # Added Newtral-specific selector
                     ]
                     
                     for selector in date_selectors:
@@ -532,6 +547,12 @@ class NewtralScraper(BaseScraper):
                                     "mayo": "05", "junio": "06", "julio": "07", "agosto": "08",
                                     "septiembre": "09", "octubre": "10", "noviembre": "11", "diciembre": "12"
                                 }
+                                
+                                match = re.search(r'(\d{1,2})\s*[/.-]\s*(\d{1,2})\s*[/.-]\s*(\d{4})', date_str)
+                                if match:
+                                    day, month, year = match.groups()
+                                    publish_date = f"{year}-{month.zfill(2)}-{day.zfill(2)}"
+                                    break
                                 
                                 match = re.search(r'(\d{1,2})\s+de\s+(\w+)\s+de\s+(\d{4})', date_str.lower())
                                 if match:
@@ -558,7 +579,8 @@ class NewtralScraper(BaseScraper):
                 "div.main-image img",
                 "img.post-thumbnail",
                 "meta[property='og:image']",
-                ".wp-post-image"
+                ".wp-post-image",
+                ".card-img-bg" # Added Newtral-specific selector
             ]
             
             image_url = None
@@ -621,3 +643,4 @@ class NewtralScraper(BaseScraper):
                 driver.quit()
             except Exception as quit_error:
                 logger.warning(f"Error closing WebDriver: {quit_error}")
+
