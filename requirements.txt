@@ -10,6 +10,7 @@ cookiecutter==2.6.0
 Django==5.1.7
 django-browser-reload==1.18.0
 django-tailwind==3.8.0
+fake-useragent==2.1.0
 idna==3.10
 Jinja2==3.1.6
 markdown-it-py==3.0.0

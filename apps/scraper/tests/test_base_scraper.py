@@ -1,9 +1,8 @@
-# apps/scraper/tests/test_base_scraper.py
 import sys
 import os
 import logging
 
-# Ajustar el path para importaciones
+# Fix the path to the project root
 current_dir = os.path.dirname(os.path.abspath(__file__))
 project_root = os.path.abspath(os.path.join(current_dir, '..', '..', '..'))
 sys.path.insert(0, project_root)
@@ -11,7 +10,7 @@ sys.path.insert(0, project_root)
 from apps.scraper.scrapers import BaseScraper
 from apps.scraper.utils.logging_config import configure_logging
 
-# Configurar nuestro sistema de logs
+# Configure logging
 logger = configure_logging(log_level=logging.DEBUG)
 
 # Logging configuration basic for the tests
