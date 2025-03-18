@@ -112,9 +112,11 @@ class BaseScraper:
         response = self.get_page(url)
         return self.parse_html(response)
 
-    def scrape(self):
+    def scrape(self, **kwargs):
         """
         Main scraping method to be implemented by subclasses.
+
+        Allows optional keyword arguments to support different scraper implementations.
 
         Raises:
             NotImplementedError: This method must be implemented by subclasses.
