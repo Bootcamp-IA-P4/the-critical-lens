@@ -5,6 +5,7 @@ import time
 import random
 from requests.exceptions import RequestException
 from ..utils.user_agents import UserAgentManager
+from ..utils.robots_parser import RobotsParser
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +16,7 @@ class BaseScraper:
     This class provides basic methods for making HTTP requests and parsing HTML.
     """
 
-    def __init__(self, base_url, name="BaseScraper", max_retries=3, retry_delay=2):
+    def __init__(self, base_url, name="BaseScraper", max_retries=3, retry_delay=2, respect_robots=True):
         """
         Initialize the base scraper with configuration.
 
@@ -24,6 +25,7 @@ class BaseScraper:
             name (str): A name for this scraper for logging purposes.
             max_retries (int): Number of retry attempts in case of request failure.
             retry_delay (int): Base delay in seconds between retries.
+            respect_robots (bool): Whether to respect robots.txt instructions.
         """
         self.base_url = base_url
         self.name = name
@@ -31,10 +33,15 @@ class BaseScraper:
         self.max_retries = max_retries
         self.retry_delay = retry_delay
         self.user_agent_manager = UserAgentManager()
+        self.respect_robots = respect_robots
+        
+        # Initialize robots.txt parser if needed
+        if self.respect_robots:
+            self.robots_parser = RobotsParser()
         
         # Configure default headers with a random user agent
+        self.rotate_user_agent()
         self.session.headers.update({
-            'User-Agent': self.user_agent_manager.get_random_user_agent(),
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
             'Accept-Language': 'es-ES,es;q=0.8,en-US;q=0.5,en;q=0.3',
         })
@@ -46,6 +53,7 @@ class BaseScraper:
         user_agent = self.user_agent_manager.get_random_user_agent()
         self.session.headers.update({'User-Agent': user_agent})
         logger.debug(f"Rotated user agent: {user_agent}")
+        return user_agent
 
     def get_page(self, url, timeout=30):
         """
@@ -57,8 +65,19 @@ class BaseScraper:
 
         Returns:
             requests.Response: The response object if successful.
+            
+        Raises:
+            PermissionError: If robots.txt disallows access to the URL.
+            RequestException: If there's an error fetching the page.
         """
         full_url = url if url.startswith('http') else f"{self.base_url.rstrip('/')}/{url.lstrip('/')}"
+        
+        # Check robots.txt if enabled
+        if self.respect_robots:
+            current_user_agent = self.session.headers.get('User-Agent')
+            if not self.robots_parser.can_fetch(full_url, current_user_agent):
+                logger.warning(f"Access to {full_url} disallowed by robots.txt")
+                raise PermissionError(f"Access to {full_url} disallowed by robots.txt")
 
         for attempt in range(self.max_retries):
             try:
@@ -67,7 +86,7 @@ class BaseScraper:
                 
                 # Add a delay for retries
                 if attempt > 0:
-                    delay = self.retry_delay * (1 + random.random())
+                    delay = self.retry_delay * (1 + random.random()) * (2 ** (attempt - 1))
                     logger.debug(f"Retry attempt {attempt+1}/{self.max_retries}. Waiting {delay:.2f}s before retry.")
                     time.sleep(delay)
                 
