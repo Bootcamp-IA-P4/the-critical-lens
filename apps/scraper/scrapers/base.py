@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 import time
 import random
 from requests.exceptions import RequestException
+from ..utils.user_agents import UserAgentManager
 
 logger = logging.getLogger(__name__)
 
@@ -29,14 +30,22 @@ class BaseScraper:
         self.session = requests.Session()
         self.max_retries = max_retries
         self.retry_delay = retry_delay
-
-        # Configure default headers
+        self.user_agent_manager = UserAgentManager()
+        
+        # Configure default headers with a random user agent
         self.session.headers.update({
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'User-Agent': self.user_agent_manager.get_random_user_agent(),
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'Accept-Language': 'es-ES,es;q=0.8,en-US;q=0.5,en;q=0.3',
         })
 
-        logger.info(f"Initialized {self.name} scraper for {base_url}")
+        logger.info(f"Initialized {self.name} scraper for {base_url} with user agent: {self.session.headers['User-Agent']}")
+
+    def rotate_user_agent(self):
+        """Rotate the User-Agent header to avoid detection."""
+        user_agent = self.user_agent_manager.get_random_user_agent()
+        self.session.headers.update({'User-Agent': user_agent})
+        logger.debug(f"Rotated user agent: {user_agent}")
 
     def get_page(self, url, timeout=30):
         """
@@ -53,6 +62,9 @@ class BaseScraper:
 
         for attempt in range(self.max_retries):
             try:
+                # Rotate user agent before each attempt
+                self.rotate_user_agent()
+                
                 # Add a delay for retries
                 if attempt > 0:
                     delay = self.retry_delay * (1 + random.random())
@@ -86,6 +98,19 @@ class BaseScraper:
             BeautifulSoup: The parsed HTML.
         """
         return BeautifulSoup(response.text, 'html.parser')
+        
+    def scrape_page(self, url):
+        """
+        Scrape a page: fetch and parse it.
+        
+        Args:
+            url (str): URL to scrape
+            
+        Returns:
+            BeautifulSoup: Parsed HTML page
+        """
+        response = self.get_page(url)
+        return self.parse_html(response)
 
     def scrape(self):
         """
