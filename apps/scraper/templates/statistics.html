@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}Estadísticas - The Critical Lens{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto">
+    <section class="mb-10">
+        <div class="text-center">
+            <h1 class="mb-4 text-4xl font-bold text-slate-900">Estadísticas de Desinformación</h1>
+            <p class="max-w-3xl mx-auto text-lg text-slate-600">
+                Análisis de datos sobre casos verificados de desinformación en España.
+                Explora las temáticas y niveles de información engañosa más frecuentes.
+            </p>
+        </div>
+    </section>
+    
+    <section class="mb-12">
+        <div class="grid grid-cols-1 gap-8 md:grid-cols-2">
+            <!-- Gráfico de temáticas -->
+            <div class="overflow-hidden bg-white shadow-md rounded-xl">
+                <div class="p-6">
+                    <h3 class="mb-4 text-xl font-semibold text-slate-800">Temáticas de desinformación</h3>
+                    <div class="flex items-center justify-center rounded-lg h-80 bg-slate-50">
+                        <p class="text-slate-500">Gráfico de temáticas</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Gráfico de niveles de desinformación -->
+            <div class="overflow-hidden bg-white shadow-md rounded-xl">
+                <div class="p-6">
+                    <h3 class="mb-4 text-xl font-semibold text-slate-800">Niveles de desinformación</h3>
+                    <div class="flex items-center justify-center rounded-lg h-80 bg-slate-50">
+                        <p class="text-slate-500">Gráfico de niveles</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
