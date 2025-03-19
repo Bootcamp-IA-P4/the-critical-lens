@@ -33,7 +33,6 @@ INSTALLED_APPS = [
     # Custom apps
     'apps.scraper',
     'apps.analyzer',
-    'apps.dataset',
     'apps.dashboard',
     'theme',
 ]
