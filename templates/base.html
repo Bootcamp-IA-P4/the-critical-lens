@@ -1,74 +1,100 @@
 {% load tailwind_tags %}
 <!DOCTYPE html>
 <html lang="es">
-<head>
+  <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{% block title %}The Critical Lens{% endblock %}</title>
     {% tailwind_css %}
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
     {% block extra_css %}{% endblock %}
-</head>
-<body class="min-h-screen font-sans bg-slate-50 text-slate-800">
+  </head>
+  <body class="min-h-screen font-sans text-gray-800 bg-gray-50">
     <header class="bg-white shadow-sm">
-        <div class="container px-4 py-3 mx-auto">
-            <div class="flex items-center justify-between">
-                <a href="/" class="flex items-center space-x-2">
-                    <i class="text-2xl text-teal-700 fas fa-microscope"></i>
-                    <span class="text-xl font-bold text-slate-800">The Critical Lens</span>
+      <div class="container px-4 py-3 mx-auto">
+        <div class="flex items-center justify-between">
+          <a href="/" class="flex items-center space-x-2">
+            <i class="text-2xl text-indigo-600 fas fa-microscope"></i>
+            <span class="text-xl font-bold text-indigo-800"
+              >The Critical Lens</span
+            >
+          </a>
+          <nav>
+            <ul class="flex items-center space-x-8">
+              <li>
+                <a
+                  href="/"
+                  class="py-2 text-gray-600 transition-colors border-b-2 border-transparent hover:text-indigo-600 hover:border-indigo-600"
+                >
+                  Inicio
                 </a>
-                <nav>
-                    <ul class="flex items-center space-x-8">
-                        <li>
-                            <a href="/" class="py-2 transition-colors border-b-2 border-transparent text-slate-600 hover:text-teal-700 hover:border-teal-700">
-                                Inicio
-                            </a>
-                        </li>
-                        <li>
-                            <a href="/analyzer" class="py-2 transition-colors border-b-2 border-transparent text-slate-600 hover:text-teal-700 hover:border-teal-700">
-                                Analizador
-                            </a>
-                        </li>
-                        <li>
-                            <a href="/statistics" class="py-2 transition-colors border-b-2 border-transparent text-slate-600 hover:text-teal-700 hover:border-teal-700">
-                                Estadísticas
-                            </a>
-                        </li>
-                    </ul>
-                </nav>
-            </div>
+              </li>
+              <li>
+                <a
+                  href="/analyzer"
+                  class="py-2 text-gray-600 transition-colors border-b-2 border-transparent hover:text-indigo-600 hover:border-indigo-600"
+                >
+                  Analizador
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/statistics"
+                  class="py-2 text-gray-600 transition-colors border-b-2 border-transparent hover:text-indigo-600 hover:border-indigo-600"
+                >
+                  Estadísticas
+                </a>
+              </li>
+            </ul>
+          </nav>
         </div>
+      </div>
     </header>
 
     <main class="container px-4 py-8 mx-auto">
-        {% block content %}{% endblock %}
+      {% block content %}{% endblock %}
     </main>
 
     <footer class="mt-auto bg-white border-t border-gray-200">
-        <div class="container px-4 py-6 mx-auto">
-            <div class="flex flex-col items-center justify-between md:flex-row">
-                <div class="mb-4 md:mb-0">
-                    <p class="text-sm text-gray-600">
-                        &copy; 2025 The Critical Lens - Make our society critical again
-                    </p>
-                </div>
-                <div>
-                    <ul class="flex space-x-4">
-                        <li>
-                            <a href="/" class="text-sm text-slate-500 hover:text-teal-700">Privacidad</a>
-                        </li>
-                        <li>
-                            <a href="/" class="text-sm text-slate-500 hover:text-teal-700">Términos</a>
-                        </li>
-                        <li>
-                            <a href="/" class="text-sm text-slate-500 hover:text-teal-700">Contacto</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
+      <div class="container px-4 py-6 mx-auto">
+        <div class="flex flex-col items-center justify-between md:flex-row">
+          <div class="mb-4 md:mb-0">
+            <p class="text-sm text-gray-600">
+              &copy; 2025 The Critical Lens - Make our society critical again
+            </p>
+          </div>
+          <div>
+            <ul class="flex space-x-4">
+              <li>
+                <a
+                  href="/privacy"
+                  class="text-sm text-gray-500 hover:text-indigo-600"
+                  >Privacidad</a
+                >
+              </li>
+              <li>
+                <a
+                  href="/terms"
+                  class="text-sm text-gray-500 hover:text-indigo-600"
+                  >Términos</a
+                >
+              </li>
+              <li>
+                <a
+                  href="/contact"
+                  class="text-sm text-gray-500 hover:text-indigo-600"
+                  >Contacto</a
+                >
+              </li>
+            </ul>
+          </div>
         </div>
+      </div>
     </footer>
 
     {% block extra_js %}{% endblock %}
-</body>
+  </body>
 </html>
