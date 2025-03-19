@@ -83,3 +83,6 @@ yarn-error.log*
 # Backups
 *.bak
 *.tmp
+
+# Results of scraping tests
+/scraper_output/
