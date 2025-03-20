@@ -1,3 +1,4 @@
 from django.shortcuts import render
 
-# Create your views here.
+def analyzer(request):
+    return render(request, 'analyzer.html')
