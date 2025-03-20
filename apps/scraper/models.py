@@ -48,7 +48,6 @@ class FactCheckArticle(models.Model):
     content = models.TextField(_('contenido'))
 
     # Media and metadata
-    image_url = models.URLField(_('URL de la imagen'), blank=True)
     tags = models.CharField(_('etiquetas'), max_length=255, blank=True)
     author = models.CharField(_('autor'), max_length=100, blank=True)
 
