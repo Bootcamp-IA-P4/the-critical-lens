@@ -48,25 +48,6 @@ class NewtralScraper:
             return ""
         return re.sub(r'\s+', ' ', text).strip()
 
-    def _parse_date(self, date_str):
-        """Convierte fechas en formato español a formato YYYY-MM-DD."""
-        if not date_str:
-            return None
-            
-        spanish_months = {
-            "enero": "01", "febrero": "02", "marzo": "03", "abril": "04",
-            "mayo": "05", "junio": "06", "julio": "07", "agosto": "08",
-            "septiembre": "09", "octubre": "10", "noviembre": "11", "diciembre": "12"
-        }
-        
-        match = re.search(r'(\d{1,2})\s+de\s+(\w+)\s+de\s+(\d{4})', date_str.lower())
-        if match:
-            day, month_name, year = match.groups()
-            if month_name in spanish_months:
-                return f"{year}-{spanish_months[month_name]}-{day.zfill(2)}"
-                
-        return None
-
     def _get_fact_check_urls(self, limit):
         """Obtiene URLs de fact-checks desde la página principal."""
         with self._get_browser() as driver:
@@ -127,18 +108,18 @@ class NewtralScraper:
                 
                 soup = BeautifulSoup(driver.page_source, 'html.parser')
                 
-                # Extraer datos con selectores precisos
-                
                 # Título
                 title_element = soup.select_one(".post-title-1") or soup.select_one("h1")
                 title = title_element.get_text(strip=True) if title_element else None
                 
                 # Fecha
                 date_element = soup.select_one(".post-date")
-                publish_date = None
                 if date_element:
                     date_str = date_element.get_text(strip=True)
-                    publish_date = self._parse_date(date_str)
+                    from apps.scraper.models import FactCheckArticle
+                    publish_date = FactCheckArticle.parse_date(date_str)
+                else:
+                    publish_date = None
                 
                 # Autor
                 author_element = soup.select_one(".post-author .author-link")
@@ -164,7 +145,7 @@ class NewtralScraper:
                 claim_source_element = soup.select_one(".card-author-text-link")
                 claim_source = claim_source_element.get_text(strip=True) if claim_source_element else None
                 
-                # Categoría de verificación - Usando la estrategia completa del original
+                # Categoría de verificación
                 verification_category = None
                 
                 # Primer intento: Enfoque basado en clases CSS
