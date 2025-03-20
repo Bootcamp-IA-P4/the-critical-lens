@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from apps.analyzer.services import SimpleContentAnalyzer
+from apps.analyzer.services import ContentAnalysisService
 
 def analyzer(request):
     if request.method == 'POST':
@@ -10,7 +10,7 @@ def analyzer(request):
         content = request.POST.get('content', '')
         
         # Perform analysis
-        analyzer = ContentAnalysisServicer()
+        analyzer = ContentAnalysisService()
         results = analyzer.analyze_content(title, author, source, content)
         
         # Pass results to template

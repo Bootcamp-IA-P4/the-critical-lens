@@ -1,4 +1,3 @@
-# apps/analyzer/services.py
 from typing import Dict, Any
 
 class ContentAnalysisService:
@@ -6,7 +5,7 @@ class ContentAnalysisService:
     Content analysis service based on critical thinking principles.
     """
     
-    def analyze_content(self, title: str, content: str) -> Dict:
+    def analyze_content(self, title: str, author: str, source: str, content: str) -> Dict:
         """
         Analysis of the submitted content.
         
@@ -44,12 +43,14 @@ class ContentAnalysisService:
         
         return results
     
-    def _analyze_tittle(self, title: str) -> Dict[str, Any]:
+    def _analyze_title(self, title: str) -> Dict[str, Any]:
         """Title analysis."""
         if not title:
             return {'score': 0, 'feedback': 'Título ausente o vacío.'}
 
-        # Heuristic: Title length
+        # Heuristic
+        score = 50
+        feedback = []
 
         if len(title) < 10:
             score -= 20
@@ -83,64 +84,64 @@ class ContentAnalysisService:
         }
     
     def _analyze_source(self, source: str) -> Dict[str, Any]:
-    """Source analysis."""
-    if not source:
-        return {'score': 30, 'feedback': 'Fuente no especificada'}
-    
-    # Source credibility checks
-    score = 60  
-    feedback = []
-    
-    # Expanded list of potentially credible sources
-    credible_sources = [
-        # International news agencies
-        'reuters', 'afp', 'associated press', 'ap', 
+        """Source analysis."""
+        if not source:
+            return {'score': 30, 'feedback': 'Fuente no especificada'}
         
-        # Leading Spanish media outlets
-        'el país', 'el mundo', 'la vanguardia', 'abc', 'efe', 'agencia efe', 
-        'cadena ser', 'rtve', '20minutos', 
+        # Source credibility checks
+        score = 60  
+        feedback = []
         
-        # Leading Internationl media outlets
-        'bbc', 'cnn', 'the guardian', 'the new york times', 'washington post', 
-        'le monde', 'der spiegel', 'reuters', 'associated press', 
+        # Expanded list of potentially credible sources
+        credible_sources = [
+            # International news agencies
+            'reuters', 'afp', 'associated press', 'ap', 
+            
+            # Leading Spanish media outlets
+            'el país', 'el mundo', 'la vanguardia', 'abc', 'efe', 'agencia efe', 
+            'cadena ser', 'rtve', '20minutos', 
+            
+            # Leading Internationl media outlets
+            'bbc', 'cnn', 'the guardian', 'the new york times', 'washington post', 
+            'le monde', 'der spiegel', 'reuters', 'associated press', 
+            
+            # Verified digital media outlets
+            'newtral', 'maldita.es', 'verificat.cat', 'fact-checking', 
+        ]
         
-        # Verified digital media outlets
-        'newtral', 'maldita.es', 'verificat.cat', 'fact-checking', 
-    ]
-    
-    # List of sources with low credibility or potential misinformation
-    low_credibility_sources = [
-        # Far-right media or outlets known for misinformation
-        'okdiario', 'libertad digital', 'periodista digital', 
-        'caso aislado', 'alerta digital', 'la gaceta', 
+        # List of sources with low credibility or potential misinformation
+        low_credibility_sources = [
+            # Far-right media or outlets known for misinformation
+            'okdiario', 'libertad digital', 'periodista digital', 
+            'caso aislado', 'alerta digital', 'la gaceta', 
+            
+            # Sources of conspiracies or misinformation
+            'infolibre', 'vozpópuli', 'elmundo.es', 'elconfidencial', 
+            
+            # Highly polarized foreign media
+            'fox news', 'breitbart', 'infowars', 'zerohedge', 
+            
+            # Unverified social media and platforms
+            'facebook', 'twitter', 'instagram', 'tiktok', 'telegram', 
+            'youtube', 'blog', 'foro', 'reddit'
+        ]
         
-        # Sources of conspiracies or misinformation
-        'infolibre', 'vozpópuli', 'elmundo.es', 'elconfidencial', 
+        source_lower = source.lower()
         
-        # Highly polarized foreign media
-        'fox news', 'breitbart', 'infowars', 'zerohedge', 
+        # Check for credible sources
+        if any(credible_word in source_lower for credible_word in credible_sources):
+            score += 20
+            feedback.append('Fuente reconocida')
         
-        # Unverified social media and platforms
-        'facebook', 'twitter', 'instagram', 'tiktok', 'telegram', 
-        'youtube', 'blog', 'foro', 'reddit'
-    ]
-    
-    source_lower = source.lower()
-    
-    # Check for credible sources
-    if any(credible_word in source_lower for credible_word in credible_sources):
-        score += 20
-        feedback.append('Fuente reconocida')
-    
-    # Check for low credibility sources
-    if any(low_source in source_lower for low_source in low_credibility_sources):
-        score -= 30
-        feedback.append('Fuente con historial de desinformación')
-    
-    return {
-        'score': max(0, min(score, 100)),
-        'feedback': ' | '.join(feedback) if feedback else 'Fuente con credibilidad moderada'
-    }
+        # Check for low credibility sources
+        if any(low_source in source_lower for low_source in low_credibility_sources):
+            score -= 30
+            feedback.append('Fuente con historial de desinformación')
+        
+        return {
+            'score': max(0, min(score, 100)),
+            'feedback': ' | '.join(feedback) if feedback else 'Fuente con credibilidad moderada'
+        }
     
     def _analyze_content(self, content: str) -> Dict[str, Any]:
         """Content analysis."""
@@ -158,47 +159,47 @@ class ContentAnalysisService:
         
         # Basic check for potentially emotional language
         emotional_words = [
-   # Words with extremely positive emotional charge
-   'increíble', 'impresionante', 'extraordinario', 'asombroso', 'espectacular', 
-   'alucinante', 'brutal', 'sensacional', 'fantástico', 'maravilloso', 
-   'extraordinario', 'sublime', 'genial', 'fenomenal', 'sorprendente',
-   
-   # Words with extremely negative emotional charge
-   'terrible', 'horrible', 'escandaloso', 'impactante', 'catastrófico', 
-   'desastroso', 'trágico', 'devastador', 'horroroso', 'espantoso', 
-   'apocalíptico', 'fatal', 'nefasto', 'dramático', 'perturbador',
-   
-   # Sensationalist terms
-   'bomba', 'revolución', 'guerra', 'destrucción', 'milagro', 'locura', 
-   'masacre', 'crisis', 'fracaso', 'éxito rotundo', 'golpe maestro',
-   
-   # Words that generate intense emotions
-   'demoledor', 'fulminante', 'apabullante', 'demolición', 'absoluto', 
-   'total', 'máximo', 'definitivo', 'radical', 'extremo',
-   
-   # Words that suggest exaggeration
-   'jamás visto', 'nunca antes', 'récord', 'histórico', 'revolucionario', 
-   'único', 'sin precedentes', 'inaudito', 'insólito',
-   
-   # Terms that appeal to strong emotions
-   'miedo', 'terror', 'pánico', 'shock', 'rabia', 'indignación', 
-   'odio', 'amor', 'pasión', 'ira', 'esperanza', 'desesperación',
-   
-   # Hyperbolic adjectives
-   'supremo', 'absoluto', 'total', 'completo', 'máximo', 'supremo', 
-   'definitivo', 'radical', 'extremo',
-   
-   # Terms suggesting conspiracy or secrecy
-   'oculto', 'secreto', 'conspiración', 'manipulación', 'engaño', 
-   'encubrimiento', 'filtración', 'secretismo',
-   
-   # Words that generate alarm or fear
-   'amenaza', 'peligro', 'riesgo', 'invasión', 'colapso', 'ruina', 
-   'destrucción', 'apocalipsis', 'fin', 'último',
-   
-   # Terms that seek to generate division or confrontation
-   'guerra', 'batalla', 'lucha', 'conflicto', 'enemigo', 'traición', 
-   'confrontación', 'choque', 'ruptura'
+        # Words with extremely positive emotional charge
+        'increíble', 'impresionante', 'extraordinario', 'asombroso', 'espectacular', 
+        'alucinante', 'brutal', 'sensacional', 'fantástico', 'maravilloso', 
+        'extraordinario', 'sublime', 'genial', 'fenomenal', 'sorprendente',
+        
+        # Words with extremely negative emotional charge
+        'terrible', 'horrible', 'escandaloso', 'impactante', 'catastrófico', 
+        'desastroso', 'trágico', 'devastador', 'horroroso', 'espantoso', 
+        'apocalíptico', 'fatal', 'nefasto', 'dramático', 'perturbador',
+        
+        # Sensationalist terms
+        'bomba', 'revolución', 'guerra', 'destrucción', 'milagro', 'locura', 
+        'masacre', 'crisis', 'fracaso', 'éxito rotundo', 'golpe maestro',
+        
+        # Words that generate intense emotions
+        'demoledor', 'fulminante', 'apabullante', 'demolición', 'absoluto', 
+        'total', 'máximo', 'definitivo', 'radical', 'extremo',
+        
+        # Words that suggest exaggeration
+        'jamás visto', 'nunca antes', 'récord', 'histórico', 'revolucionario', 
+        'único', 'sin precedentes', 'inaudito', 'insólito',
+        
+        # Terms that appeal to strong emotions
+        'miedo', 'terror', 'pánico', 'shock', 'rabia', 'indignación', 
+        'odio', 'amor', 'pasión', 'ira', 'esperanza', 'desesperación',
+        
+        # Hyperbolic adjectives
+        'supremo', 'absoluto', 'total', 'completo', 'máximo', 'supremo', 
+        'definitivo', 'radical', 'extremo',
+        
+        # Terms suggesting conspiracy or secrecy
+        'oculto', 'secreto', 'conspiración', 'manipulación', 'engaño', 
+        'encubrimiento', 'filtración', 'secretismo',
+        
+        # Words that generate alarm or fear
+        'amenaza', 'peligro', 'riesgo', 'invasión', 'colapso', 'ruina', 
+        'destrucción', 'apocalipsis', 'fin', 'último',
+        
+        # Terms that seek to generate division or confrontation
+        'guerra', 'batalla', 'lucha', 'conflicto', 'enemigo', 'traición', 
+        'confrontación', 'choque', 'ruptura'
 ]
 
         emotional_count = sum(1 for word in emotional_words if word in content.lower())
