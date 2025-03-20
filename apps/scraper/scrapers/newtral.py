@@ -63,32 +63,6 @@ class NewtralScraper(BaseScraper):
             return ""
         return re.sub(r'\s+', ' ', text).strip()[:250]
 
-    def _parse_date(self, date_str):
-        """Convierte fechas en formato español (20 de marzo de 2025) a YYYY-MM-DD."""
-        if not date_str:
-            return None
-            
-        # Formato "día de mes de año"
-        spanish_months = {
-            "enero": "01", "febrero": "02", "marzo": "03", "abril": "04",
-            "mayo": "05", "junio": "06", "julio": "07", "agosto": "08",
-            "septiembre": "09", "octubre": "10", "noviembre": "11", "diciembre": "12"
-        }
-        
-        match = re.search(r'(\d{1,2})\s+de\s+(\w+)\s+de\s+(\d{4})', date_str.lower())
-        if match:
-            day, month_name, year = match.groups()
-            if month_name in spanish_months:
-                return f"{year}-{spanish_months[month_name]}-{day.zfill(2)}"
-        
-        # Intentar formato DD/MM/YYYY si el anterior falla
-        match = re.search(r'(\d{1,2})/(\d{1,2})/(\d{4})', date_str)
-        if match:
-            day, month, year = match.groups()
-            return f"{year}-{month.zfill(2)}-{day.zfill(2)}"
-            
-        return None
-
     def _get_fact_check_urls(self, limit):
         """Extrae URLs de artículos o devuelve URLs de respaldo."""
         # Para evitar problemas, usamos directamente las URLs predefinidas
@@ -110,25 +84,21 @@ class NewtralScraper(BaseScraper):
                 # Analizar HTML
                 soup = BeautifulSoup(driver.page_source, 'html.parser')
                 
-                # Título
+                # Título - Usando un selector más específico
                 title = None
-                title_element = soup.select_one("h1.post-title") or soup.select_one("h1")
+                title_element = soup.select_one("h1.post-title-1") or soup.select_one("h1.post-title") or soup.select_one("h1")
                 if title_element:
                     title = self._clean_text(title_element.get_text())
                 
-                # Fecha (con selector preciso)
+                # Fecha (obtenemos el texto en bruto para procesarlo después con el modelo)
                 publish_date = None
                 date_element = soup.select_one(".post-date")
                 if date_element:
-                    date_text = date_element.get_text(strip=True)
-                    publish_date = self._parse_date(date_text)
+                    publish_date = date_element.get_text(strip=True)
                 
-                # Si no se encontró la fecha, intentar extraerla de la URL
+                # Si no se encontró la fecha, usamos la URL para que el modelo la procese
                 if not publish_date:
-                    match = re.search(r'/(\d{8})/', url)
-                    if match:
-                        date_str = match.group(1)
-                        publish_date = f"{date_str[:4]}-{date_str[4:6]}-{date_str[6:8]}"
+                    publish_date = url
                 
                 # Categoría de verificación
                 verification = None
@@ -136,38 +106,51 @@ class NewtralScraper(BaseScraper):
                     ".card-text-marked-red": "Falso",
                     ".card-text-marked-orange": "Engañoso",
                     ".card-text-marked-pistachio": "Verdad a medias",
-                    ".card-text-marked-green": "Verdadero"
+                    ".card-text-marked-green": "Verdadero",
+                    ".card-factcheck-result-text": None  # Selector directo para el texto de resultado
                 }
                 
+                # Primero intentamos con los selectores de clase por color
                 for selector, category in verification_selectors.items():
-                    if soup.select_one(selector):
+                    if not category:  # Para el selector directo de texto
+                        result_element = soup.select_one(selector)
+                        if result_element:
+                            verification = self._clean_text(result_element.get_text())
+                            break
+                    elif soup.select_one(selector):
                         verification = category
                         break
                 
-                # Claim (afirmación)
+                # Claim (afirmación) - Buscando específicamente dentro de mark
                 claim = None
-                claim_selectors = ["blockquote", ".card-text-marked-red", 
-                                  ".card-text-marked-orange", ".card-text-marked-pistachio", 
-                                  ".card-text-marked-green"]
-                
-                for selector in claim_selectors:
-                    elements = soup.select(selector)
-                    for element in elements:
-                        text = self._clean_text(element.get_text())
-                        if text and len(text) > 20:
-                            claim = text
-                            break
+                # Primero intentamos encontrar el claim en el formato mark dentro de las clases de colores
+                claim_element = soup.select_one(".card-text-marked-red mark, .card-text-marked-orange mark, .card-text-marked-pistachio mark, .card-text-marked-green mark")
+                if claim_element:
+                    claim = self._clean_text(claim_element.get_text())
+                else:
+                    # Si no encuentra en mark, buscamos con selectores más amplios
+                    claim_selectors = ["blockquote", ".card-text-marked-red", 
+                                      ".card-text-marked-orange", ".card-text-marked-pistachio", 
+                                      ".card-text-marked-green"]
                     
-                    if claim:
-                        break
+                    for selector in claim_selectors:
+                        elements = soup.select(selector)
+                        for element in elements:
+                            text = self._clean_text(element.get_text())
+                            if text and len(text) > 20:
+                                claim = text
+                                break
+                        
+                        if claim:
+                            break
                 
-                # Fuente de la afirmación (con selector preciso)
+                # Fuente de la afirmación - Selector más específico
                 claim_source = None
-                source_element = soup.select_one(".card-author-text-link")
+                source_element = soup.select_one(".card-author-text .card-author-text-link")
                 if source_element:
                     claim_source = self._clean_text(source_element.get_text())
                 
-                # Etiquetas (con selector preciso)
+                # Etiquetas
                 tags = []
                 tag_elements = soup.select(".pill.pill-outline")
                 for tag_element in tag_elements:
@@ -175,10 +158,11 @@ class NewtralScraper(BaseScraper):
                     if tag_text:
                         tags.append(tag_text)
                 
-                # Contenido (limitado)
+                # Contenido - Selecciona específicamente párrafos dentro de section-post-content
                 content = None
                 content_element = soup.select_one(".section-post-content")
                 if content_element:
+                    # Seleccionar solo párrafos, no listas u otros elementos
                     paragraphs = content_element.select("p")
                     content_texts = []
                     

@@ -1,5 +1,7 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+import re
+from datetime import datetime
 
 class VerificationCategory(models.Model):
     """
@@ -62,3 +64,58 @@ class FactCheckArticle(models.Model):
 
     def __str__(self):
         return self.title
+        
+    @classmethod
+    def parse_date(cls, date_str):
+        """
+        Parse dates from Newtral articles into a standard date format.
+        
+        Args:
+            date_str: String containing a date
+            
+        Returns:
+            datetime.date or None if parsing fails
+        """
+        if not date_str:
+            return None
+            
+        # Convert datetime to date
+        if hasattr(date_str, 'date'):
+            return date_str.date()
+            
+        # Convert to string and clean
+        if not isinstance(date_str, str):
+            date_str = str(date_str)
+        
+        date_str = date_str.strip()
+        
+        # Try to extract date from URL (Newtral format: /YYYYMMDD/)
+        url_match = re.search(r'/(\d{8})/', date_str)
+        if url_match:
+            try:
+                year = url_match.group(1)[:4]
+                month = url_match.group(1)[4:6]
+                day = url_match.group(1)[6:8]
+                return datetime(int(year), int(month), int(day)).date()
+            except (ValueError, IndexError):
+                pass
+                
+        # Try Spanish format
+        spanish_months = {
+            "enero": 1, "febrero": 2, "marzo": 3, "abril": 4,
+            "mayo": 5, "junio": 6, "julio": 7, "agosto": 8,
+            "septiembre": 9, "octubre": 10, "noviembre": 11, "diciembre": 12
+        }
+        
+        spanish_match = re.search(r'(\d{1,2})\s+de\s+(\w+)\s+de\s+(\d{4})', date_str.lower())
+        if spanish_match:
+            try:
+                day = int(spanish_match.group(1))
+                month = spanish_months.get(spanish_match.group(2))
+                year = int(spanish_match.group(3))
+                if month:
+                    return datetime(year, month, day).date()
+            except (ValueError, IndexError):
+                pass
+        
+        return None
