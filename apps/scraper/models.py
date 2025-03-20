@@ -72,17 +72,17 @@ class FactCheckArticle(models.Model):
         
         Args:
             date_str: String containing a date
-            
+                
         Returns:
             datetime.date or None if parsing fails
         """
         if not date_str:
             return None
-            
+                
         # Convert datetime to date
         if hasattr(date_str, 'date'):
             return date_str.date()
-            
+                
         # Convert to string and clean
         if not isinstance(date_str, str):
             date_str = str(date_str)
@@ -93,21 +93,21 @@ class FactCheckArticle(models.Model):
         url_match = re.search(r'/(\d{8})/', date_str)
         if url_match:
             try:
-                year = url_match.group(1)[:4]
-                month = url_match.group(1)[4:6]
-                day = url_match.group(1)[6:8]
+                year = int(url_match.group(1)[:4])
+                month = int(url_match.group(1)[4:6])
+                day = int(url_match.group(1)[6:8])
                 return datetime(int(year), int(month), int(day)).date()
             except (ValueError, IndexError):
                 pass
-                
-        # Try Spanish format
+                    
+        # Try Spanish format with improved regex
         spanish_months = {
             "enero": 1, "febrero": 2, "marzo": 3, "abril": 4,
             "mayo": 5, "junio": 6, "julio": 7, "agosto": 8,
             "septiembre": 9, "octubre": 10, "noviembre": 11, "diciembre": 12
         }
         
-        spanish_match = re.search(r'(\d{1,2})\s+de\s+(\w+)\s+de\s+(\d{4})', date_str.lower())
+        spanish_match = re.search(r'(\d{1,2})\s+de\s+(\w+)(?:\s+de\s+|\s+)(\d{4})', date_str.lower())
         if spanish_match:
             try:
                 day = int(spanish_match.group(1))
@@ -117,5 +117,23 @@ class FactCheckArticle(models.Model):
                     return datetime(year, month, day).date()
             except (ValueError, IndexError):
                 pass
+        
+        # Try ISO format (YYYY-MM-DD)
+        iso_match = re.search(r'(\d{4})[/-](\d{1,2})[/-](\d{1,2})', date_str)
+        if iso_match:
+            try:
+                year = int(iso_match.group(1))
+                month = int(iso_match.group(2))
+                day = int(iso_match.group(3))
+                return datetime(year, month, day).date()
+            except (ValueError, TypeError):
+                pass
+        
+        # Try direct parsing with dateutil as a last resort
+        try:
+            from dateutil import parser
+            return parser.parse(date_str).date()
+        except:
+            pass
         
         return None
