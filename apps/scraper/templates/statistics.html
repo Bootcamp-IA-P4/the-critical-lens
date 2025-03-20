@@ -52,11 +52,11 @@
     </section>
 </div>
 
-<!-- Scripts para los gráficos -->
+<!-- Scripts for the graphics-->
 {% if not no_data %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    // Almacenamos los datos para que los use el archivo JS externo
+    // Save the data to use external JS
     window.chartData = {{ chart_data_json|safe }};
 </script>
 <script src="{% static 'js/statistics-charts.js' %}"></script>
