@@ -20,7 +20,7 @@ def get_verification_stats(total_articles):
         count=Count('id')
     ).order_by('-count'))
     
-    # Calculate percentages 
+    # Calculate percentages directly
     for item in distribution:
         item['percentage'] = round((item['count'] / total_articles) * 100, 1)
     
@@ -36,14 +36,14 @@ def get_source_stats(total_articles):
     Returns:
         List of dictionaries with source stats (limited to top 10)
     """
-    # Get top 10 sources
+    # Get top 10 sources directly
     distribution = list(FactCheckArticle.objects.values(
         'claim_source'
     ).annotate(
         count=Count('id')
     ).order_by('-count')[:10])
     
-    # Calculate percentages 
+    # Calculate percentages directly
     for item in distribution:
         item['percentage'] = round((item['count'] / total_articles) * 100, 1)
     
@@ -66,7 +66,7 @@ def get_tag_stats(total_articles):
         # Convert string representation of list to actual list
         tag_list = ast.literal_eval(article_tags)
         
-        # Count each tag 
+        # Count each tag (assuming they're all valid)
         for tag in tag_list:
             tags_count[tag] = tags_count.get(tag, 0) + 1
     
@@ -97,7 +97,7 @@ def statistics(request):
             'labels': [item['verification_category__name'] for item in verification_distribution],
             'counts': [item['count'] for item in verification_distribution],
             'percentages': [item['percentage'] for item in verification_distribution],
-            'colors': ['#ff6b6b', '#feca57', '#54a0ff', '#1dd1a1']  
+            'colors': ['#ff6b6b', '#feca57', '#54a0ff', '#1dd1a1']  # Red, Yellow, Blue, Green
         },
         'source': {
             'labels': [item['claim_source'] for item in source_distribution],
