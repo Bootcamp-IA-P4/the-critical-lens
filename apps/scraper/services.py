@@ -96,7 +96,6 @@ class ScraperService:
                         article.claim = article_data.get('claim', article.claim)
                         article.claim_source = article_data.get('claim_source', article.claim_source)
                         article.content = article_data.get('content', article.content)
-                        article.image_url = article_data.get('image_url', article.image_url)
                         article.tags = article_data.get('tags', article.tags)
                         article.author = article_data.get('author', article.author)
                         article.verification_category = verification_category or article.verification_category
