@@ -10,33 +10,47 @@
     {% block extra_css %}{% endblock %}
 </head>
 <body class="min-h-screen font-sans bg-slate-50 text-slate-800">
-    <header class="bg-white shadow-sm">
-        <div class="container px-4 py-3 mx-auto">
-            <div class="flex items-center justify-between">
-                <a href="/" class="flex items-center space-x-2">
-                    <i class="text-2xl text-teal-700 fas fa-microscope"></i>
-                    <span class="text-xl font-bold text-slate-800">The Critical Lens</span>
-                </a>
-                <nav>
-                    <ul class="flex items-center space-x-8">
-                        <li>
-                            <a href="/" class="py-2 transition-colors border-b-2 border-transparent text-slate-600 hover:text-teal-700 hover:border-teal-700">
-                                Inicio
-                            </a>
-                        </li>
-                        <li>
-                            <a href="/analyzer" class="py-2 transition-colors border-b-2 border-transparent text-slate-600 hover:text-teal-700 hover:border-teal-700">
-                                Analizador
-                            </a>
-                        </li>
-                        <li>
-                            <a href="/statistics" class="py-2 transition-colors border-b-2 border-transparent text-slate-600 hover:text-teal-700 hover:border-teal-700">
-                                Estadísticas
-                            </a>
-                        </li>
-                    </ul>
-                </nav>
+    <!-- Newspaper Header -->
+    <header class="bg-white border-gray-200 border--b">
+        <div class="container max-w-6xl px-4 mx-auto">
+            <!-- Top Strip - Date and Edition -->
+            <div class="flex justify-between py-2 text-xs border-b border-gay-200">
+            <div class="text-gay-600">
+                {% now "l, j \d\e F \d\e Y" %}
             </div>
+            <div class="text-gray-600">Pensamiento Crítico</div>
+        </div>
+
+        <!-- Main Header with Title -->
+        <div class="py-6 text-center">
+            <h1 class="text-5xl font-black tracking-tighter">
+                THE CRITICAL LENS
+            </h1>
+            <p class="mt-2 text-sm italic text-gray-600">
+                "Make our society critical again"
+            </p>
+        </div>
+
+        <!-- Navegation menu -->
+         <nav class="py-3 border-t border-b border-gray-200">
+            <ul class="flex justify-center space-x-8">
+                <li>
+                    <a href="/" class="py-2 font-semibold tracking-wider uppercase transition-colors hover:text-teal-700">
+                        Inicio
+                    </a>
+                </li>
+                <li>
+                    <a href="/analyzer" class="py-2 font-semibold tracking-wider uppercase transition-colors hover:text-teal-700">
+                        Analizador
+                    </a>
+                </li>
+                <li>
+                    <a href="/statistics" class="py-2 font-semibold tracking-wider uppercase transition-colors hover:text-teal-700">
+                        Estadísticas
+                    </a>
+                </li>
+            </ul>
+         </nav>
         </div>
     </header>
 
