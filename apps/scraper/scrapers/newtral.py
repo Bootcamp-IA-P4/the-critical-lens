@@ -3,6 +3,8 @@ import time
 from datetime import datetime
 import re
 from contextlib import contextmanager
+from django.utils import timezone
+from apps.scraper.utils.logging_config import configure_logging
 
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
@@ -13,7 +15,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 from bs4 import BeautifulSoup
 
-logger = logging.getLogger(__name__)
+logger = configure_logging()
 
 class NewtralScraper:
     """
@@ -200,7 +202,7 @@ class NewtralScraper:
                     "content": content,
                     "tags": tags,
                     "author": author,
-                    "scraped_at": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+                    "scraped_at": timezone.now().strftime("%Y-%m-%d %H:%M:%S")
                 }
                 
                 return article

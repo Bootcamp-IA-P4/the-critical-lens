@@ -4,6 +4,7 @@ from django.utils import timezone
 from django.db import transaction
 from .models import FactCheckArticle, VerificationCategory
 from .scrapers.newtral import NewtralScraper
+logger = logging.getLogger(__name__)
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +27,9 @@ class ScraperService:
         Returns:
             tuple: (total_articles, new_articles, updated_articles, failed_articles)
         """
+        from apps.scraper.utils.logging_config import configure_logging
+        logger = configure_logging()
+
         logger.info(f"Iniciando extracción de fact-checks de Newtral (limit={limit})")
         
         # Inicializar scraper de Newtral

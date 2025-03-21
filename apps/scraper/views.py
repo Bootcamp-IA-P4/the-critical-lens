@@ -3,6 +3,7 @@ from django.db.models import Count
 import ast
 import json
 from apps.scraper.models import FactCheckArticle
+from django.utils import timezone
 
 def get_verification_stats(total_articles):
     """
