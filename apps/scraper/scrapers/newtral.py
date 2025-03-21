@@ -19,7 +19,7 @@ logger = configure_logging()
 
 class NewtralScraper:
     """
-    Scraper para extraer fact-checks del sitio web de Newtral.
+    Scraper to extract fact-checks from the Newtral website.
     """
     def __init__(self, respect_robots=True, **kwargs):
         self.base_url = "https://www.newtral.es"
@@ -28,7 +28,7 @@ class NewtralScraper:
 
     @contextmanager
     def _get_browser(self):
-        """Configura y devuelve un navegador Chrome para el scraping."""
+        """Sets up and returns a Chrome browser for scraping."""
         driver = None
         try:
             chrome_options = Options()
@@ -45,13 +45,13 @@ class NewtralScraper:
                 driver.quit()
 
     def _clean_text(self, text):
-        """Limpia el texto removiendo espacios extra y saltos de línea."""
+        """Cleans text by removing extra spaces and line breaks."""
         if not text:
             return ""
         return re.sub(r'\s+', ' ', text).strip()
 
     def _get_fact_check_urls(self, limit):
-        """Obtiene URLs de fact-checks desde la página principal."""
+        """Gets fact-check URLs from the main page."""
         with self._get_browser() as driver:
             try:
                 driver.get(self.fact_check_url)
@@ -60,17 +60,17 @@ class NewtralScraper:
                 urls = []
                 click_attempts = 0
                 
-                # Extraer URLs actuales
+                # Extract current URLs
                 links = driver.find_elements(By.CSS_SELECTOR, ".card-title-link")
                 for link in links:
                     url = link.get_attribute('href')
                     if url and url not in urls:
                         urls.append(url)
                 
-                # Hacer clic en "Cargar más" hasta alcanzar el límite
+                # Click on "Load more" until reaching the limit
                 while len(urls) < limit and click_attempts < 30:
                     try:
-                        # Buscar botón de "Cargar más"
+                        # Find "Load more" button
                         load_more = driver.find_element(By.ID, "vog-newtral-es-verification-list-load-more-btn")
                         
                         if not load_more.is_displayed():
@@ -100,7 +100,7 @@ class NewtralScraper:
                 return []
 
     def _extract_article_data(self, url):
-        """Extrae datos de un artículo de fact-check individual."""
+        """Extracts data from an individual fact-check article."""
         with self._get_browser() as driver:
             try:
                 driver.get(url)
@@ -110,11 +110,11 @@ class NewtralScraper:
                 
                 soup = BeautifulSoup(driver.page_source, 'html.parser')
                 
-                # Título
+                # Title
                 title_element = soup.select_one(".post-title-1") or soup.select_one("h1")
                 title = title_element.get_text(strip=True) if title_element else None
                 
-                # Fecha
+                # Date
                 date_element = soup.select_one(".post-date")
                 if date_element:
                     date_str = date_element.get_text(strip=True)
@@ -123,11 +123,11 @@ class NewtralScraper:
                 else:
                     publish_date = None
                 
-                # Autor
+                # Author
                 author_element = soup.select_one(".post-author .author-link")
                 author = author_element.get_text(strip=True) if author_element else None
                 
-                # Contenido
+                # Content
                 content_element = soup.select_one(".section-post-content")
                 content = ""
                 if content_element:
@@ -135,7 +135,7 @@ class NewtralScraper:
                     content = " ".join([p.get_text(strip=True) for p in paragraphs])
                     content = self._clean_text(content)
                 
-                # Claim (afirmación verificada)
+                # Claim (verified statement)
                 mark_element = soup.select_one("mark")
                 claim = None
                 if mark_element:
@@ -143,14 +143,14 @@ class NewtralScraper:
                     claim = re.sub(r'^["""]|["""]$', '', claim)
                     claim = self._clean_text(claim)
                 
-                # Autor del claim
+                # Claim author
                 claim_source_element = soup.select_one(".card-author-text-link")
                 claim_source = claim_source_element.get_text(strip=True) if claim_source_element else None
                 
-                # Categoría de verificación
+                # Verification category
                 verification_category = None
                 
-                # Primer intento: Enfoque basado en clases CSS
+                # First attempt: CSS class-based approach
                 verification_selectors = {
                     ".card-text-marked-red": "Falso",
                     ".card-text-marked-orange": "Engañoso",
@@ -164,7 +164,7 @@ class NewtralScraper:
                         verification_category = category
                         break
                 
-                # Segundo intento: Enfoque basado en texto
+                # Second attempt: Text-based approach
                 if not verification_category:
                     possible_categories = ["Verdad a medias", "Falso", "Engañoso", "Verdadero"]
                     
@@ -172,7 +172,7 @@ class NewtralScraper:
                         # Buscar el texto directo en cualquier elemento
                         elements = soup.find_all(string=lambda text: category in text if text else False)
                         
-                        # Buscar elementos con estilo o clase específica que contengan el texto
+                        # Look for direct text in any element
                         if not elements:
                             try:
                                 elements = soup.select(f"*:contains('{category}')")
@@ -183,7 +183,7 @@ class NewtralScraper:
                             verification_category = category
                             break
                 
-                # Etiquetas
+                # Tags
                 tags = []
                 tag_elements = soup.select(".section-post-tags .pill-outline")
                 for tag_element in tag_elements:
@@ -191,7 +191,7 @@ class NewtralScraper:
                     if tag_text:
                         tags.append(tag_text)
                 
-                # Crear diccionario con los datos extraídos
+                # Create dictionary with extracted data
                 article = {
                     "title": title,
                     "url": url,
@@ -213,13 +213,13 @@ class NewtralScraper:
 
     def scrape(self, limit=10, **kwargs):
         """
-        Método principal para extraer fact-checks de Newtral.
+        Main method to extract fact-checks from Newtral.
         
         Args:
-            limit (int): Número máximo de artículos a extraer
+            limit (int): Maximum number of articles to extract
             
         Returns:
-            list: Lista de artículos extraídos
+            list: List of extracted articles
         """
         logger.info(f"Iniciando extracción con límite: {limit}")
         
