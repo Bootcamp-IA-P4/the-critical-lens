@@ -7,12 +7,13 @@
     <title>{% block title %}The Critical Lens{% endblock %}</title>
     {% tailwind_css %}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Lora:wght@400;500;600;700&display=swap">
     {% block extra_css %}{% endblock %}
 </head>
-<body class="min-h-screen font-sans bg-slate-50 text-slate-800">
+<body class="min-h-screen bg-white text-gray-900 font-[Lora]">
     <!-- Newspaper Header -->
     <header class="bg-white border-gray-200 border--b">
-        <div class="container max-w-6xl px-4 mx-auto">
+        <div class="container px-4 mx-auto max-w-7xl">
             <!-- Top Strip - Date and Edition -->
             <div class="flex justify-between py-2 text-xs border-b border-gay-200">
             <div class="text-gay-600">
@@ -22,8 +23,8 @@
         </div>
 
         <!-- Main Header with Title -->
-        <div class="py-6 text-center">
-            <h1 class="text-5xl font-black tracking-tighter">
+        <div class="py-6 text-center max-w-7xl">
+            <h1 class="text-5xl font-black font-[Playfair_Display] tracking-tight">
                 THE CRITICAL LENS
             </h1>
             <p class="mt-2 text-sm italic text-gray-600">
@@ -54,7 +55,7 @@
         </div>
     </header>
 
-    <main class="container px-4 py-8 mx-auto">
+    <main class="container px-4 py-8 mx-auto bg-white max-w-7xl">
         {% block content %}{% endblock %}
     </main>
 
