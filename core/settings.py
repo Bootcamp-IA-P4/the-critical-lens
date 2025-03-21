@@ -123,7 +123,7 @@ USE_TZ = True
 
 STATICFILES_DIRS = [
     BASE_DIR / 'apps' / 'scraper' / 'static',
-    # BASE_DIR / 'static',
+    BASE_DIR / 'apps' / 'dashboard' / 'static',
 ]
 
 STATIC_URL = '/static/'

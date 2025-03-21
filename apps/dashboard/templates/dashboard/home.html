@@ -1,60 +1,68 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Inicio - The Critical Lens{% endblock %}
 
 {% block content %}
-<div class="max-w-5xl mx-auto">
-    <section class="mb-12">
-        <div class="text-center">
-            <h1 class="mb-4 text-4xl font-bold text-slate-900">Make our society critical again</h1>
-            <p class="max-w-3xl mx-auto text-lg text-center text-slate-600">
-                En la era de la desinformación, aprender a analizar críticamente la información 
-                es más importante que nunca. The Critical Lens te ayuda a desarrollar estas habilidades.
-            </p>
-        </div>
-    </section>
-    
-    <section class="mb-12">
-        <div class="overflow-hidden bg-white shadow-md rounded-xl">
-            <div class="p-8">
-                <div class="flex items-center justify-center mb-6">
-                    <i class="mr-3 text-3xl text-teal-700 fas fa-search-plus"></i>
-                    <h2 class="text-2xl font-semibold text-slate-800">¿Cómo funciona?</h2>
-                </div>
-                <p class="mb-6 text-center text-slate-600">
-                    The Critical Lens es una herramienta educativa diseñada para analizar noticias 
-                    y fomentar el pensamiento crítico utilizando técnicas y criterios basados en 
-                    investigaciones académicas sobre desinformación
+<!-- Headline -->
+<section class="mb-12 text-center">
+    <h1 class="text-4xl md:text-5xl font-bold font-[Playfair_Display] tracking-tight mb-4">
+        Combatiendo la desinformación
+    </h1>
+    <div class="w-24 h-0.5 bg-gray-300 mx-auto mb-6"></div>
+    <p class="max-w-3xl mx-auto leading-relaxed text-gray-800">
+        En la era digital, donde la información fluye sin control, discernir la verdad se ha vuelto más difícil que nunca.
+        The Critical Lens ofrece herramientas basadas en el pensamiento crítico para evaluar la credibilidad de la información
+        y combatir la desinformación que nos rodea cada día.
+    </p>
+</section>
+
+<!-- Tools blocks -->
+<section class="mb-12">
+    <div class="grid grid-cols-1 gap-8 md:grid-cols-2">
+        <!-- Analyzer tool -->
+        <div >
+            <div class="overflow-hidden aspect-w-16 aspect-h-9">
+                <img src="{% static 'img/analyzer.jpg' %}" 
+                     alt="Analizador de credibilidad" 
+                     class="object-cover w-full h-full">
+            </div>
+            <div class="pt-6">
+                <h2 class="text-2xl font-[Playfair_Display] font-semibold mb-4 border-b border-gray-200 pb-2">
+                    Analizador de credibilidad
+                </h2>
+                <p class="mb-4 leading-relaxed text-gray-800">
+                    Evalúa la credibilidad de noticias y contenidos usando parámetros de verificación 
+                    de hechos y principios del pensamiento crítico. Nuestra herramienta analiza 
+                    automáticamente el contenido para identificar posibles señales de desinformación.
                 </p>
-                <div class="flex justify-center">
-                    <a href="/analyzer" class="flex items-center px-6 py-3 font-medium text-white transition-colors bg-teal-700 rounded-md shadow-sm hover:bg-teal-800">
-                        <i class="mr-2 fas fa-microscope"></i>
-                        Comenzar a analizar
-                    </a>
-                </div>
+                <a href="/analyzer" class="font-semibold text-teal-700 underline hover:no-underline">
+                    Acceder al analizador →
+                </a>
             </div>
         </div>
-    </section>
-    
-    <section class="mb-12">
-        <div class="overflow-hidden bg-white shadow-md rounded-xl">
-            <div class="p-8">
-                <div class="flex items-center justify-center mb-6">
-                    <i class="mr-3 text-3xl text-teal-700 fas fa-chart-line"></i>
-                    <h2 class="text-2xl font-semibold text-slate-800">Estadísticas de desinformación</h2>
-                </div>
-                <p class="mb-6 text-center text-slate-600">
-                    Explora datos y tendencias sobre la desinformación en España. Nuestra plataforma 
-                    analiza casos verificados para identificar patrones y temas recurrentes
+        
+        <!-- Statistics tool-->
+        <div class="">
+            <div class="overflow-hidden aspect-w-16 aspect-h-9">
+                <img src="{% static 'img/statistics.jpg' %}" 
+                     alt="Estadísticas de desinformación" 
+                     class="object-cover w-full h-full">
+            </div>
+            <div class="pt-6">
+                <h2 class="text-2xl font-[Playfair_Display] font-semibold mb-4 border-b border-gray-200 pb-2">
+                    Estadísticas de desinformación
+                </h2>
+                <p class="mb-4 leading-relaxed text-gray-800">
+                    Explora tendencias y patrones sobre la desinformación en España basados en 
+                    casos verificados. Estas estadísticas permiten comprender mejor los tipos de
+                    desinformación más comunes y sus fuentes habituales.
                 </p>
-                <div class="flex justify-center">
-                    <a href="/statistics" class="flex items-center px-6 py-3 font-medium text-white transition-colors bg-teal-700 rounded-md shadow-sm hover:bg-teal-800">
-                        <i class="mr-2 fas fa-chart-bar"></i>
-                        Ver estadísticas
-                    </a>
-                </div>
+                <a href="/statistics" class="font-semibold text-teal-700 underline hover:no-underline">
+                    Ver estadísticas →
+                </a>
             </div>
         </div>
-    </section>
-</div>
+    </div>
+</section>
 {% endblock %}
