@@ -66,7 +66,7 @@ class NewtralScraper:
                         urls.append(url)
                 
                 # Hacer clic en "Cargar más" hasta alcanzar el límite
-                while len(urls) < limit and click_attempts < 10:
+                while len(urls) < limit and click_attempts < 30:
                     try:
                         # Buscar botón de "Cargar más"
                         load_more = driver.find_element(By.ID, "vog-newtral-es-verification-list-load-more-btn")
