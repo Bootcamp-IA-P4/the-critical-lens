@@ -1,37 +1,36 @@
-// Archivo: apps/analyzer/static/js/analyzer.js
 document.addEventListener('DOMContentLoaded', function() {
-  // Obtener el formulario
+  // Get the form
   const form = document.querySelector('form[action*="analyzer"]');
   
   if (form) {
-      // Capturar el evento de envío del formulario
+      // Capture the form submission event
       form.addEventListener('submit', function() {
-          // Guardar la posición actual de scroll en localStorage
+          // Save the current scroll position in localStorage
           localStorage.setItem('scrollPosition', window.pageYOffset);
           localStorage.setItem('scrollToResults', 'true');
       });
   }
   
-  // Verificar si venimos de un envío de formulario
+  // Check if we're coming from a form submission
   const resultsSection = document.getElementById('results-section');
   const shouldRestore = localStorage.getItem('scrollPosition');
   const shouldScrollToResults = localStorage.getItem('scrollToResults');
   
   if (shouldRestore) {
-      // Primero restaurar la posición original
+      // First restore the original position
       window.scrollTo(0, parseInt(shouldRestore));
       
-      // Luego, si hay resultados y debemos hacer scroll, hacerlo después de un breve retraso
+      // Then, if there are results and we should scroll, do it after a brief delay
       if (resultsSection && shouldScrollToResults) {
           setTimeout(function() {
               resultsSection.scrollIntoView({
                   behavior: 'smooth',
                   block: 'start'
               });
-          }, 300); // Retraso para asegurar que la página está lista
+          }, 300); // Delay to ensure the page is ready
       }
       
-      // Limpiar localStorage para no afectar futuras navegaciones
+      // Clear localStorage to not affect future navigation
       localStorage.removeItem('scrollPosition');
       localStorage.removeItem('scrollToResults');
   }
