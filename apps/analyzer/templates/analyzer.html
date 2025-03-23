@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Analizador - The Critical Lens{% endblock %}
+
+{% block content %}
+    <!-- Headline -->
+    <section class="mb-10 text-center">
+            <h1 class="text-4xl md:text-5xl font-bold font-[Playfair_Display] tracking-tight mb-4">
+                Analizador de Credibilidad
+            </h1>
+            <div class="w-24 h-0.5 bg-gray-300 mx-auto mb-6"></div>
+            <p class="max-w-3xl mx-auto leading-relaxed text-gray-800">
+                Evalúa la credibilidad de la información utilizando criterios basados en investigaciones 
+                sobre desinformación. Introduce el contenido que deseas analizar y obtén una evaluación detallada
+            </p>
+    </section>
+    
+    <!-- Analysis form -->
+    <section class="mb-12">
+        <div class="overflow-hidden bg-white border border-gray-200 rounded-lg shadow-md">
+            <div class="p-8">
+                <h2 class="text-2xl font-[Playfair_Display] font-bold mb-6 border-b border-gray-200 pb-2">
+                    Formulario de análisis
+                </h2>
+
+                <form method="POST" action="{% url 'analyzer' %}">
+                    {% csrf_token %}
+                    
+                    <div class="mb-6">
+                        <label for="title" class="block mb-2 font-medium text-gray-700">Título</label>
+                        <input type="text" id="title" name="title" required
+                            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                            placeholder="Título del artículo o contenido">
+                    </div>
+                    
+                    <div class="grid grid-cols-1 gap-6 mb-6 md:grid-cols-2">
+                        <div>
+                            <label for="author" class="block mb-2 font-medium text-gray-700">Autor</label>
+                            <input type="text" id="author" name="author"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                                placeholder="Autor del contenido (opcional)">
+                        </div>
+                        
+                        <div>
+                            <label for="source" class="block mb-2 font-medium text-gray-700">Fuente</label>
+                            <input type="text" id="source" name="source"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                                placeholder="Medio, red social o fuente (opcional)">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <label for="content" class="block mb-2 font-medium text-gray-700">Contenido</label>
+                        <textarea id="content" name="content" required rows="10"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                                placeholder="Pega aquí el contenido completo que deseas analizar"></textarea>
+                    </div>
+                    
+                    <div class="text-center">
+                        <button type="submit" 
+                                class="inline-block px-8 py-3 font-medium text-white bg-teal-700 border border-teal-700 hover:bg-teal-800">
+                            Analizar contenido
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+    
+    {% if results %}
+    <!-- Analysi results -->
+    <section id="results-section" class="mb-12">
+    <div class="overflow-hidden bg-white border border-gray-200 rounded-lg shadow-md">
+        <div class="p-8">
+            <h2 class="text-2xl font-[Playfair_Display] font-bold mb-6 border-b border-gray-200 pb-2">
+                Resultados del análisis
+            </h2>
+                
+            <!-- Overall Score -->
+            <div class="mb-8 text-center">
+                <div class="inline-block">
+                    <div class="flex items-center justify-center w-32 h-32 mb-3 border-8 border-teal-500 rounded-full">
+                            <span class="text-3xl font-bold text-gray-900">{{ results.overall_score|floatformat:0 }}%</span>
+                     </div>
+                    </div>
+                    <h3 class="mb-1 text-xl font-semibold">Puntuación de credibilidad</h3>
+                    <p class="max-w-2xl mx-auto text-gray-700">{{ results.summary }}</p>
+                </div>
+                    
+                <!-- Analysis details -->
+                <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                    <div class="p-5 border border-gray-200 rounded-lg">
+                        <h4 class="pb-2 mb-4 text-lg font-semibold border-b border-gray-100">
+                            Análisis de componentes
+                        </h4>
+                        <ul class="space-y-4">
+                            <li class="flex">
+                                <div class="mr-3 text-teal-700 font-semibold min-w-[80px]">Título:</div>
+                                <div>
+                                    {{ results.analysis_details.title.feedback }} 
+                                    <span class="text-sm text-gray-500">({{ results.analysis_details.title.score }}%)</span>
+                                </div>
+                            </li>
+                            <li class="flex">
+                                <div class="mr-3 text-teal-700 font-semibold min-w-[80px]">Autor:</div>
+                                <div>
+                                    {{ results.analysis_details.author.feedback }} 
+                                    <span class="text-sm text-gray-500">({{ results.analysis_details.author.score }}%)</span>
+                                </div>
+                            </li>
+                            <li class="flex">
+                                <div class="mr-3 text-teal-700 font-semibold min-w-[80px]">Fuente:</div> 
+                                <div>
+                                    {{ results.analysis_details.source.feedback }} 
+                                    <span class="text-sm text-gray-500">({{ results.analysis_details.source.score }}%)</span>
+                                </div>
+                            </li>
+                            <li class="flex">
+                                <div class="mr-3 text-teal-700 font-semibold min-w-[80px]">Contenido:</div>
+                                <div>
+                                    {{ results.analysis_details.content.feedback }} 
+                                    <span class="text-sm text-gray-500">({{ results.analysis_details.content.score }}%)</span>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                        
+                    <!-- Recommendations -->
+                    <div class="p-5 border border-gray-200 rounded-lg">
+                        <h4 class="pb-2 mb-4 text-lg font-semibold border-b border-gray-100">
+                            Recomendaciones
+                        </h4>
+                        <ul class="space-y-4">
+                            <li class="flex items-start">
+                                <span class="mr-3 font-semibold text-amber-600">1.</span>
+                                <span class="text-gray-800">Mantén una actitud crítica al evaluar la información</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="mr-3 font-semibold text-amber-600">2.</span>
+                                <span class="text-gray-800">Busca fuentes adicionales para contrastar</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="mr-3 font-semibold text-amber-600">3.</span>
+                                <span class="text-gray-800">Cuestiona los supuestos y fuentes</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'js/analyzer.js' %}"></script>
+{% endblock %}

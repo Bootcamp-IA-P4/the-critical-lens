@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Estadísticas - The Critical Lens{% endblock %}
+
+{% block content %}
+    <!-- Headline -->
+    <section class="mb-10 text-center">
+            <h1 class="text-4xl md:text-5xl font-bold font-[Playfair_Display] tracking-tight mb-4">
+                Estadísticas de Desinformación
+            </h1>
+            <div class="w-24 h-0.5 bg-gray-300 mx-auto mb-6"></div>
+            <p class="max-w-3xl mx-auto leading-relaxed text-gray-800">
+                Análisis de datos sobre casos verificados de desinformación por el portal de verificación Newtral.
+                Explora las temáticas y niveles de información engañosa más frecuentes
+            </p>
+        </div>
+    </section>
+    
+    <!-- Topics Chart -->
+    <!-- Verification Categories Chart -->
+    <section class="mb-10">
+        <div class="overflow-hidden bg-white border border-gray-200 rounded-lg shadow-md">
+            <div class="p-6">
+                <h2 class="text-2xl font-[Playfair_Display] font-bold mb-6 border-b border-gray-200 pb-2">
+                    Niveles de desinformación
+                </h2>
+                <div class="flex items-center justify-center rounded-lg h-80">
+                    <canvas id="verification-chart"></canvas>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Sources Chart -->
+    <section class="mb-10">
+        <div class="overflow-hidden bg-white border border-gray-200 rounded-lg shadow-md">
+            <div class="p-6">
+                <h2 class="text-2xl font-[Playfair_Display] font-semibold mb-6 border-b border-gray-200 pb-2">
+                    Fuentes de afirmaciones dudosas verificadas
+                </h2>
+                <div class="flex items-center justify-center rounded-lg h-80">
+                    <canvas id="source-chart"></canvas>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tags Chart -->
+    <section class="mb-10">
+        <div class="overflow-hidden bg-white border border-gray-200 rounded-lg shadow-md">
+            <div class="p-6">
+                <h2 class="text-2xl font-[Playfair_Display] font-semibold mb-6 border-b border-gray-200 pb-2">
+                    Temáticas de desinformación
+                </h2>
+                <div class="flex items-center justify-center rounded-lg h-80">
+                    <canvas id="tags-chart"></canvas>
+                </div>
+            </div>
+        </div>
+    </section>
+
+<!-- Scripts for the charts -->
+{% if not no_data %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Save the chart data in a global variable
+    window.chartData = {{ chart_data_json|safe }};
+</script>
+<script src="{% static 'js/statistics-charts.js' %}"></script>
+{% endif %}
+{% endblock %}
