@@ -272,4 +272,4 @@ Si deseas contribuir a este proyecto, por favor:
 
 ## 📜 Licencia
 
-Este proyecto está licenciado bajo la Licencia MIT - ver el archivo LICENSE para más detalles.
+Este proyecto está licenciado bajo la Licencia MIT
