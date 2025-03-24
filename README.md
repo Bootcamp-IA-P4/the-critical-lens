@@ -151,7 +151,7 @@ python manage.py scrape_newtral --limit 5 --ignore-robots
 ### Ejecutar todos los tests
 
 ```bash
-pytest
+pytest apps/scraper/tests/
 ```
 
 ### Ejecutar tests específicos
