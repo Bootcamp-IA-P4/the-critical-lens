@@ -89,13 +89,15 @@ python manage.py migrate
 
 ### 7. Configurar Tailwind CSS
 
+### Instalar dependencias de Node.js
 ```bash
-# Instalar dependencias de Node.js
 cd theme/static_src
 npm install
+```
 
-# Compilar estilos CSS
-npm run build
+### Compilar estilos CSS
+``bash
+python manage.py tailwind start
 ```
 
 ### 8. Ejecutar servidor de desarrollo
