@@ -108,6 +108,32 @@ python manage.py runserver
 
 La aplicación estará disponible en http://127.0.0.1:8000/
 
+### 9. Crear usuario administrador
+
+Para acceder al panel de administración de Django, necesitas crear un superusuario:
+
+```bash
+python manage.py createsuperuser
+```
+
+Sigue las instrucciones en la terminal para configurar el nombre de usuario, correo electrónico y contraseña. Una vez completado, podrás acceder al panel de administración en http://127.0.0.1:8000/admin/
+
+### 10. Configuración del sistema de logs
+
+El proyecto utiliza un sistema de logs para registrar información sobre el scraping y otras operaciones. Debes crear manualmente la carpeta de logs y los archivos correspondientes:
+
+```bash
+# Crear el directorio de logs
+mkdir -p logs
+
+# Crear archivos de log vacíos
+touch logs/django.log
+touch logs/scraper.log
+touch logs/scraper_error.log
+```
+
+Esta carpeta está incluida en .gitignore para evitar que los archivos de log se suban al repositorio.
+
 ## 🔍 Uso
 
 ### Analizador de Credibilidad
@@ -216,6 +242,14 @@ the-critical-lens/
 Esta estructura sigue buenas prácticas de desarrollo Django, con clara separación de responsabilidades y organización modular.
 
 ## 📄 Modelos de datos
+
+### Diagrama de la base de datos
+
+La siguiente imagen muestra la estructura relacional de la base de datos:
+
+[Ver diagrama de la base de datos](https://dbdiagram.io/d/67e1377a75d75cc8443a3b7d)
+
+Esta estructura permite gestionar eficientemente tanto las categorías de verificación como los artículos extraídos mediante el scraper.
 
 ### VerificationCategory
 
