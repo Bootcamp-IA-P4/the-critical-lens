@@ -96,7 +96,7 @@ npm install
 ```
 
 ### Compilar estilos CSS
-``bash
+```bash
 python manage.py tailwind start
 ```
 
