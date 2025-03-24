@@ -1,10 +1,9 @@
 import logging
 import time
-from datetime import datetime
 import re
 from contextlib import contextmanager
 from django.utils import timezone
-from apps.scraper.utils.logging_config import configure_logging
+from .base import BaseScraper
 
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
@@ -15,16 +14,20 @@ from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 from bs4 import BeautifulSoup
 
-logger = configure_logging()
+logger = logging.getLogger(__name__)
 
-class NewtralScraper:
+class NewtralScraper(BaseScraper):
     """
     Scraper to extract fact-checks from the Newtral website.
     """
     def __init__(self, respect_robots=True, **kwargs):
-        self.base_url = "https://www.newtral.es"
+        super().__init__(
+            base_url="https://www.newtral.es",
+            name="NewtralScraper",
+            respect_robots=respect_robots,
+            **kwargs
+        )
         self.fact_check_url = "https://www.newtral.es/zona-verificacion/fact-check/"
-        self.respect_robots = respect_robots
 
     @contextmanager
     def _get_browser(self):
@@ -37,6 +40,9 @@ class NewtralScraper:
             chrome_options.add_argument("--window-size=1920,1080")
             chrome_options.add_argument("--no-sandbox")
             
+            # Use the same user agent as the base scraper
+            chrome_options.add_argument(f"user-agent={self.session.headers['User-Agent']}")
+            
             service = Service(ChromeDriverManager().install())
             driver = webdriver.Chrome(service=service, options=chrome_options)
             yield driver
@@ -44,14 +50,12 @@ class NewtralScraper:
             if driver:
                 driver.quit()
 
-    def _clean_text(self, text):
-        """Cleans text by removing extra spaces and line breaks."""
-        if not text:
-            return ""
-        return re.sub(r'\s+', ' ', text).strip()
-
     def _get_fact_check_urls(self, limit):
         """Gets fact-check URLs from the main page."""
+        # Use the base class to check robots.txt
+        if self.respect_robots and not self._can_access(self.fact_check_url):
+            return []
+            
         with self._get_browser() as driver:
             try:
                 driver.get(self.fact_check_url)
@@ -70,7 +74,6 @@ class NewtralScraper:
                 # Click on "Load more" until reaching the limit
                 while len(urls) < limit and click_attempts < 30:
                     try:
-                        # Find "Load more" button
                         load_more = driver.find_element(By.ID, "vog-newtral-es-verification-list-load-more-btn")
                         
                         if not load_more.is_displayed():
@@ -93,6 +96,10 @@ class NewtralScraper:
                         logger.warning(f"Error al hacer clic en 'Cargar más': {e}")
                         break
                 
+                # Filter URLs based on robots.txt
+                if self.respect_robots:
+                    urls = [url for url in urls if self._can_access(url)]
+                
                 return urls[:limit]
                 
             except Exception as e:
@@ -110,47 +117,37 @@ class NewtralScraper:
                 
                 soup = BeautifulSoup(driver.page_source, 'html.parser')
                 
-                # Title
+                # Extract basic article data
                 title_element = soup.select_one(".post-title-1") or soup.select_one("h1")
                 title = title_element.get_text(strip=True) if title_element else None
                 
-                # Date
                 date_element = soup.select_one(".post-date")
-                if date_element:
-                    date_str = date_element.get_text(strip=True)
-                    from apps.scraper.models import FactCheckArticle
-                    publish_date = FactCheckArticle.parse_date(date_str)
-                else:
-                    publish_date = None
+                from apps.scraper.models import FactCheckArticle
+                publish_date = FactCheckArticle.parse_date(date_element.get_text(strip=True)) if date_element else None
                 
-                # Author
                 author_element = soup.select_one(".post-author .author-link")
                 author = author_element.get_text(strip=True) if author_element else None
                 
-                # Content
+                # Extract content
                 content_element = soup.select_one(".section-post-content")
                 content = ""
                 if content_element:
                     paragraphs = content_element.find_all('p')
                     content = " ".join([p.get_text(strip=True) for p in paragraphs])
-                    content = self._clean_text(content)
                 
-                # Claim (verified statement)
+                # Extract claim
                 mark_element = soup.select_one("mark")
                 claim = None
                 if mark_element:
                     claim = mark_element.get_text(strip=True)
                     claim = re.sub(r'^["""]|["""]$', '', claim)
-                    claim = self._clean_text(claim)
                 
-                # Claim author
+                # Extract claim source
                 claim_source_element = soup.select_one(".card-author-text-link")
                 claim_source = claim_source_element.get_text(strip=True) if claim_source_element else None
                 
-                # Verification category
+                # Find verification category
                 verification_category = None
-                
-                # First attempt: CSS class-based approach
                 verification_selectors = {
                     ".card-text-marked-red": "Falso",
                     ".card-text-marked-orange": "Engañoso",
@@ -159,31 +156,20 @@ class NewtralScraper:
                 }
                 
                 for selector, category in verification_selectors.items():
-                    element = soup.select_one(selector)
-                    if element:
+                    if soup.select_one(selector):
                         verification_category = category
                         break
                 
-                # Second attempt: Text-based approach
+                # Fallback method for category
                 if not verification_category:
                     possible_categories = ["Verdad a medias", "Falso", "Engañoso", "Verdadero"]
-                    
                     for category in possible_categories:
-                        # Buscar el texto directo en cualquier elemento
                         elements = soup.find_all(string=lambda text: category in text if text else False)
-                        
-                        # Look for direct text in any element
-                        if not elements:
-                            try:
-                                elements = soup.select(f"*:contains('{category}')")
-                            except:
-                                continue
-                                
                         if elements:
                             verification_category = category
                             break
                 
-                # Tags
+                # Extract tags
                 tags = []
                 tag_elements = soup.select(".section-post-tags .pill-outline")
                 for tag_element in tag_elements:
@@ -191,8 +177,8 @@ class NewtralScraper:
                     if tag_text:
                         tags.append(tag_text)
                 
-                # Create dictionary with extracted data
-                article = {
+                # Return article data
+                return {
                     "title": title,
                     "url": url,
                     "verification_category": verification_category,
@@ -205,27 +191,30 @@ class NewtralScraper:
                     "scraped_at": timezone.now().strftime("%Y-%m-%d %H:%M:%S")
                 }
                 
-                return article
-                
             except Exception as e:
                 logger.error(f"Error al extraer artículo {url}: {e}")
                 return None
 
+    def _can_access(self, url):
+        """Check if we can access a URL based on robots.txt"""
+        if not self.respect_robots:
+            return True
+        return self.robots_parser.can_fetch(url, self.session.headers.get('User-Agent'))
+
     def scrape(self, limit=10, **kwargs):
         """
         Main method to extract fact-checks from Newtral.
-        
-        Args:
-            limit (int): Maximum number of articles to extract
-            
-        Returns:
-            list: List of extracted articles
         """
         logger.info(f"Iniciando extracción con límite: {limit}")
         
+        # Rotate user agent
+        self.rotate_user_agent()
+        
+        # Get article URLs
         article_urls = self._get_fact_check_urls(limit)
         logger.info(f"URLs a procesar: {len(article_urls)}")
         
+        # Extract articles
         articles = []
         for url in article_urls:
             article = self._extract_article_data(url)
