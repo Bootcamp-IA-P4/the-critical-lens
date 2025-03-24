@@ -118,22 +118,6 @@ python manage.py createsuperuser
 
 Sigue las instrucciones en la terminal para configurar el nombre de usuario, correo electrónico y contraseña. Una vez completado, podrás acceder al panel de administración en http://127.0.0.1:8000/admin/
 
-### 10. Configuración del sistema de logs
-
-El proyecto utiliza un sistema de logs para registrar información sobre el scraping y otras operaciones. Debes crear manualmente la carpeta de logs y los archivos correspondientes:
-
-```bash
-# Crear el directorio de logs
-mkdir -p logs
-
-# Crear archivos de log vacíos
-touch logs/django.log
-touch logs/scraper.log
-touch logs/scraper_error.log
-```
-
-Esta carpeta está incluida en .gitignore para evitar que los archivos de log se suban al repositorio.
-
 ## 🔍 Uso
 
 ### Analizador de Credibilidad
