@@ -6,6 +6,14 @@
 
 ![Vista de la página principal](static/img/Macbook-Pro-16-2110x1286_critical_lens.png)
 
+## ⚠️ Aviso Legal
+
+**Este proyecto es exclusivamente para fines educativos y de investigación.** La extracción de datos (scraping) implementada en este proyecto tiene como único objetivo el estudio académico y la práctica del desarrollo de software, sin fines comerciales. 
+
+No se pretende violar los términos de servicio de ningún sitio web. Los datos extraídos no se redistribuyen ni se utilizan con fines comerciales. El desarrollador no se hace responsable del mal uso que se pueda hacer de estas herramientas.
+
+Cualquier entidad que considere que sus derechos están siendo vulnerados puede contactar con el desarrollador para solicitar la eliminación del contenido correspondiente.
+
 ## 📝 Descripción
 
 **The Critical Lens** es una aplicación web desarrollada con Django y Tailwind CSS que ayuda a los usuarios a combatir la desinformación mediante herramientas basadas en el pensamiento crítico. En la era digital, donde la información fluye sin control, discernir la verdad se ha vuelto más difícil que nunca. Este proyecto ofrece:
@@ -149,11 +157,8 @@ La aplicación incluye un sistema de scraping que extrae verificaciones de hecho
 ### Ejecutar el scraper
 
 ```bash
-# Extraer 10 artículos
-python manage.py scrape_newtral --limit 10
-
-# Ignorar restricciones de robots.txt (uso limitado para pruebas)
-python manage.py scrape_newtral --limit 5 --ignore-robots
+# Extraer 10 artículos (respeta archivo robots.txt de Newtral)
+python manage.py scrape_newtral --limit 10 
 ```
 
 ## 🧪 Tests
@@ -161,7 +166,7 @@ python manage.py scrape_newtral --limit 5 --ignore-robots
 ### Ejecutar todos los tests
 
 ```bash
-pytest apps/scraper/tests/
+pytest -v apps/scraper/tests/
 ```
 
 ### Ejecutar tests específicos
@@ -171,7 +176,7 @@ pytest apps/scraper/tests/
 pytest apps/scraper/tests/test_base_scraper.py
 
 # Test de rotación de user agents
-pytest apps/scraper/tests/test_user_agent_rotation.py
+pytest -v apps/scraper/tests/test_user_agent_rotation.py
 
 # Test de extracción de Newtral
 pytest apps/scraper/tests/test_newtral_scraper.py
