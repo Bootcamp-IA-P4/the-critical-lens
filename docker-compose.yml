@@ -1,0 +1,127 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:14
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    env_file:
+      - ./.env
+    environment:
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_DB=${DB_NAME}
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  # Django Web Application with Gunicorn and Uvicorn workers
+  web:
+    build: .
+    volumes:
+      - .:/app
+      - static_volume:/app/static
+    env_file:
+      - ./.env
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    entrypoint: []
+    command: >
+      bash -c "
+        mkdir -p /app/staticfiles &&
+        if ! grep -q 'STATIC_ROOT' /app/core/settings.py; then
+          echo 'STATIC_ROOT = os.path.join(BASE_DIR, \"staticfiles\")' >> /app/core/settings.py;
+        fi &&
+        cd /app/theme/static_src && npm run build &&
+        cd /app &&
+        python manage.py migrate --noinput &&
+        python manage.py collectstatic --noinput &&
+        gunicorn core.wsgi:application --bind 0.0.0.0:8000 --workers 4 --worker-class uvicorn.workers.UvicornWorker
+      "
+
+  # Development Server
+  dev:
+    build: .
+    volumes:
+      - .:/app
+    env_file:
+      - ./.env
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+      - "3000:3000"  # For Tailwind in development mode
+    entrypoint: []
+    command: >
+      bash -c "
+        mkdir -p /app/staticfiles &&
+        if ! grep -q 'STATIC_ROOT' /app/core/settings.py; then
+          echo 'STATIC_ROOT = os.path.join(BASE_DIR, \"staticfiles\")' >> /app/core/settings.py;
+        fi &&
+        cd /app/theme/static_src && npm run build &&
+        cd /app &&
+        python manage.py migrate --noinput &&
+        python manage.py runserver 0.0.0.0:8000
+      "
+
+  # Use external database (with no local database)
+  web-external-db:
+    build: .
+    volumes:
+      - .:/app
+      - static_volume:/app/static
+    env_file:
+      - ./.env
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    entrypoint: []
+    command: >
+      bash -c "
+        mkdir -p /app/staticfiles &&
+        if ! grep -q 'STATIC_ROOT' /app/core/settings.py; then
+          echo 'STATIC_ROOT = os.path.join(BASE_DIR, \"staticfiles\")' >> /app/core/settings.py;
+        fi &&
+        cd /app/theme/static_src && npm run build &&
+        cd /app &&
+        python manage.py migrate --noinput &&
+        python manage.py collectstatic --noinput &&
+        gunicorn core.wsgi:application --bind 0.0.0.0:8000 --workers 4 --worker-class uvicorn.workers.UvicornWorker
+      "
+
+  # Service for running tests
+  test:
+    build: .
+    volumes:
+      - .:/app
+    env_file:
+      - ./.env
+    depends_on:
+      db:
+        condition: service_healthy
+    entrypoint: []
+    command: >
+      bash -c "
+        mkdir -p /app/staticfiles &&
+        if ! grep -q 'STATIC_ROOT' /app/core/settings.py; then
+          echo 'STATIC_ROOT = os.path.join(BASE_DIR, \"staticfiles\")' >> /app/core/settings.py;
+        fi &&
+        cd /app &&
+        pytest -v apps/scraper/tests/
+      "
+
+volumes:
+  postgres_data:
+  static_volume:

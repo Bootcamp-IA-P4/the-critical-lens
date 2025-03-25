@@ -3,6 +3,7 @@
 ![Django](https://img.shields.io/badge/Django-5.1.7-green.svg)
 ![Tailwind](https://img.shields.io/badge/Tailwind-3.4-blue.svg)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-latest-blue.svg)
+![Docker](https://img.shields.io/badge/Docker-ready-blue.svg)
 
 ![Vista de la página principal](static/img/Macbook-Pro-16-2110x1286_critical_lens.png)
 
@@ -31,100 +32,175 @@ Esta aplicación se basa en los conceptos y herramientas del pensamiento crític
 - **Base de datos**: PostgreSQL
 - **Web Scraping**: Selenium, BeautifulSoup4
 - **Testing**: Pytest
-
-## 📋 Requisitos
-
-- Python 3.8+
-- PostgreSQL
-- Node.js y NPM (para Tailwind CSS)
-- Chrome WebDriver (para el scraping con Selenium)
+- **Infraestructura**: Docker & Docker Compose
 
 ## 🔧 Instalación
 
-### 1. Clonar el repositorio
+El proyecto puede instalarse mediante Docker (recomendado) o de forma manual.
+
+### Opción 1: Instalación con Docker (recomendada)
+
+Esta opción proporciona un entorno completo y aislado con todas las dependencias necesarias, incluyendo PostgreSQL, Tailwind CSS y ChromeDriver para los tests.
+
+#### Requisitos previos
+- Docker y Docker Compose instalados en tu sistema
+
+#### Pasos para instalación con Docker
+
+1. Clonar el repositorio
+   ```bash
+   git clone https://github.com/tuusuario/the-critical-lens.git
+   cd the-critical-lens
+   ```
+
+2. Crear archivo de configuración
+   ```bash
+   cp .env.example .env
+   ```
+   
+   El archivo `.env` debe contener las siguientes variables para funcionar con Docker:
+   ```
+   # Django settings
+   SECRET_KEY=django-insecure-your-secure-key-here
+   DEBUG=True
+   ALLOWED_HOSTS=127.0.0.1,localhost
+   
+   # Database settings
+   DB_NAME=critical_lens
+   DB_USER=postgres
+   DB_PASSWORD=postgres
+   DB_HOST=db    # Importante: usar 'db' para conectar con la base de datos en Docker
+   DB_PORT=5432
+   ```
+
+3. Iniciar los contenedores
+   ```bash
+   # Iniciar la base de datos
+   docker-compose up -d db
+   
+   # Iniciar el entorno de desarrollo de Django y Tailwind
+   docker-compose up -d dev
+   ```
+
+4. Acceder a la aplicación
+   La aplicación estará disponible en http://localhost:8000/
+
+#### Comandos útiles para Docker
 
 ```bash
-git clone https://github.com/tuusuario/the-critical-lens.git
-cd the-critical-lens
+# Ver logs de la aplicación
+docker-compose logs -f dev
+
+# Extraer artículos de Newtral (limit=5)
+docker-compose exec dev python manage.py scrape_newtral --limit 5
+
+# Crear superusuario para el panel de administración
+docker-compose exec dev python manage.py createsuperuser
 ```
 
-### 2. Crear y activar entorno virtual
+#### Alternancia entre bases de datos
 
-```bash
-python -m venv venv
-# En Windows
-venv\Scripts\activate
-# En macOS/Linux
-source venv/bin/activate
-```
+El proyecto permite alternar fácilmente entre usar la base de datos en Docker o una base de datos local/externa:
 
-### 3. Instalar dependencias
+1. Para usar la base de datos en Docker:
+   ```
+   # Abre el archivo .env y asegúrate de que contenga esta línea:
+   DB_HOST=db
+   ```
 
-```bash
-pip install -r requirements.txt
-```
+2. Para usar una base de datos local/externa:
+   ```
+   # Abre el archivo .env y cambia la configuración a:
+   DB_HOST=localhost    # O la dirección IP/hostname de tu base de datos externa
+   ```
 
-### 4. Configurar variables de entorno
+3. Después de cambiar el archivo .env, reinicia los contenedores:
+   ```bash
+   docker-compose restart dev
+   ```
 
-Crea un archivo `.env` en la raíz del proyecto con el siguiente contenido:
+Esta configuración te permite desarrollar con flexibilidad, usando la base de datos en Docker cuando quieres un entorno completamente autocontenido, o conectándote a una base de datos externa cuando sea necesario.
 
-```
-# Django settings
-SECRET_KEY=django-insecure-your-secure-key-here
-DEBUG=True
-ALLOWED_HOSTS=127.0.0.1,localhost
+### Opción 2: Instalación manual
 
-# Database settings
-DB_NAME=critical_lens
-DB_USER=postgres
-DB_PASSWORD=postgres
-DB_HOST=localhost
-DB_PORT=5432
-```
+Si prefieres una instalación sin Docker, sigue estos pasos:
 
-### 5. Configurar base de datos PostgreSQL
+1. Asegúrate de tener los requisitos previos:
+   - Python 3.8+
+   - PostgreSQL
+   - Node.js y NPM (para Tailwind CSS)
+   - Chrome WebDriver (para el scraping con Selenium)
 
-```bash
-# Crear base de datos en PostgreSQL
-createdb critical_lens
-```
+2. Clonar el repositorio
+   ```bash
+   git clone https://github.com/tuusuario/the-critical-lens.git
+   cd the-critical-lens
+   ```
 
-### 6. Aplicar migraciones
+3. Crear y activar entorno virtual
+   ```bash
+   python -m venv venv
+   # En Windows
+   venv\Scripts\activate
+   # En macOS/Linux
+   source venv/bin/activate
+   ```
 
-```bash
-python manage.py migrate
-```
+4. Instalar dependencias
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-### 7. Configurar Tailwind CSS
+5. Configurar variables de entorno
+   ```bash
+   cp .env.example .env
+   ```
+   
+   El archivo `.env` debe contener:
+   ```
+   # Django settings
+   SECRET_KEY=django-insecure-your-secure-key-here
+   DEBUG=True
+   ALLOWED_HOSTS=127.0.0.1,localhost
+   
+   # Database settings
+   DB_NAME=critical_lens
+   DB_USER=postgres
+   DB_PASSWORD=postgres
+   DB_HOST=localhost    # Importante: usar 'localhost' para instalación manual
+   DB_PORT=5432
+   ```
 
-### Instalar dependencias de Node.js
-```bash
-cd theme/static_src
-npm install
-```
+6. Configurar base de datos PostgreSQL
+   ```bash
+   # Crear base de datos en PostgreSQL
+   createdb critical_lens
+   ```
 
-### Compilar estilos CSS
-```bash
-python manage.py tailwind start
-```
+7. Aplicar migraciones
+   ```bash
+   python manage.py migrate
+   ```
 
-### 8. Ejecutar servidor de desarrollo
+8. Configurar Tailwind CSS
+   ```bash
+   cd theme/static_src
+   npm install
+   cd ../..
+   python manage.py tailwind start
+   ```
 
-```bash
-python manage.py runserver
-```
+9. Ejecutar servidor de desarrollo
+   ```bash
+   python manage.py runserver
+   ```
+
+10. Crear superusuario (opcional)
+    ```bash
+    python manage.py createsuperuser
+    ```
 
 La aplicación estará disponible en http://127.0.0.1:8000/
-
-### 9. Crear usuario administrador
-
-Para acceder al panel de administración de Django, necesitas crear un superusuario:
-
-```bash
-python manage.py createsuperuser
-```
-
-Sigue las instrucciones en la terminal para configurar el nombre de usuario, correo electrónico y contraseña. Una vez completado, podrás acceder al panel de administración en http://127.0.0.1:8000/admin/
 
 ## 🔍 Uso
 
@@ -150,36 +226,36 @@ Visualiza datos sobre la desinformación verificada a partir de los artículos f
 
 URL: `/statistics/`
 
-## 🤖 Scraping
-
-La aplicación incluye un sistema de scraping que extrae verificaciones de hechos del portal Newtral.
+## 🤖 Scraping y Tests
 
 ### Ejecutar el scraper
 
 ```bash
-# Extraer 10 artículos (respeta archivo robots.txt de Newtral)
+# Con Docker:
+docker-compose exec dev python manage.py scrape_newtral --limit 10
+
+# Sin Docker:
 python manage.py scrape_newtral --limit 10 
 ```
 
-## 🧪 Tests
-
-### Ejecutar todos los tests
+### Ejecutar los tests
 
 ```bash
+# Con Docker - todos los tests:
+docker-compose run --rm test
+
+# Con Docker - tests específicos:
+docker-compose run --rm test pytest -v apps/scraper/tests/test_base_scraper.py
+docker-compose run --rm test pytest -v apps/scraper/tests/test_user_agent_rotation.py
+docker-compose run --rm test pytest -v apps/scraper/tests/test_newtral_scraper.py
+
+# Sin Docker - todos los tests:
 pytest -v apps/scraper/tests/
-```
 
-### Ejecutar tests específicos
-
-```bash
-# Test del scraper base
-pytest apps/scraper/tests/test_base_scraper.py
-
-# Test de rotación de user agents
+# Sin Docker - tests específicos:
+pytest -v apps/scraper/tests/test_base_scraper.py
 pytest -v apps/scraper/tests/test_user_agent_rotation.py
-
-# Test de extracción de Newtral
-pytest apps/scraper/tests/test_newtral_scraper.py
+pytest -v apps/scraper/tests/test_newtral_scraper.py
 ```
 
 ## 📚 Estructura del proyecto
@@ -221,6 +297,8 @@ the-critical-lens/
 │   └── static_src/              # Archivos fuente para Tailwind
 ├── static/                      # Archivos estáticos para producción
 │   └── img/                     # Imágenes del proyecto
+├── docker-compose.yml           # Configuración de Docker Compose
+├── Dockerfile                   # Configuración de la imagen Docker
 ├── .env_example                 # Ejemplo de variables de entorno
 ├── .gitignore                   # Archivos ignorados por Git
 ├── manage.py                    # Script de administración de Django
@@ -277,13 +355,9 @@ Almacena artículos de verificación de hechos extraídos del portal Newtral.
 - Desarrollo de un sistema de puntuación más granular basado en técnicas de machine learning
 
 ### Mejoras de Infraestructura
-- Dockerización del proyecto para facilitar el despliegue y desarrollo
-  ```bash
-  # Ejemplo de estructura básica de dockerización prevista
-  docker-compose up -d
-  ```
 - Implementación de CI/CD para pruebas automáticas y despliegue
 - Despliegue en plataformas como Render o Railway para acceso público
+- Ampliación de los servicios Docker para incluir entornos de producción y staging
 
 ## 👥 Contribuir
 
